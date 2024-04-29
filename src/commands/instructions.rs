@@ -1,5 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Write as _};
 
+use regex::Regex;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, clap::Parser)]
@@ -13,10 +14,10 @@ impl Instructions {
         config: &toml_edit::DocumentMut,
         _verbose: bool,
     ) -> color_eyre::Result<()> {
-        let mut output: HashMap<Vec<_>, Vec<ConfigInstruction>> = HashMap::new();
+        let mut instructions: HashMap<Vec<_>, Vec<ConfigInstruction>> = HashMap::new();
         #[allow(clippy::never_loop)]
         for (instruction, info) in &stationpedia.script_commands {
-            let i = config["instructions"]["category"].as_table().unwrap();
+            let i = config["instructions"].as_table().unwrap();
             let mut col = InstructionCollector {
                 command: instruction.clone(),
                 category: vec![],
@@ -30,12 +31,62 @@ impl Instructions {
                 continue;
             };
 
-            output
+            instructions
                 .entry(ins.category.clone())
                 .or_default()
                 .push(ins.clone());
         }
-        println!("{output:#?}");
+        let mut output = String::new();
+        output.push_str(
+            "<noinclude>
+See [[MIPS]] for the primary page for IC10 MIPS. This page lists all available instructions
+</noinclude>
+
+",
+        );
+
+        let mut colcat = CategoryCollector {
+            category: vec![],
+            categories: vec![],
+        };
+        toml_edit::visit::visit_table(&mut colcat, config["instructions"].as_table().unwrap());
+        let categories = colcat.categories;
+        let re = Regex::new(r"</?[^>]+>").unwrap();
+        for category in categories {
+            if category.first().is_some_and(|s| s == "Deprecated") {
+                continue;
+            }
+            let width = category.len() + 1;
+            output.push_str(&format!(
+                "{0:=<width$} {1} {0:=<width$}\n\n",
+                "=",
+                category.join(" / "),
+            ));
+
+            if let Some(inss) = instructions.get(&category) {
+                for ins in inss {
+                    let command = &ins.command;
+                    let real_desc = &ins.info.desc.replace('|', "{{!}}");
+                    let desc = if let Some(desc) = &ins.desc {
+                        desc
+                    } else {
+                        real_desc
+                    };
+                    let syntax = ins.info.example.replace('|', "{{!}}");
+                    let syntax = re.replace_all(&syntax, "");
+                    write!(output, "{{{{MIPSInstruction|instruction={command}|description={desc}|syntax={syntax}")?;
+                    if let Some(example) = &ins.example {
+                        write!(output, "\n|example=\n{example}")?;
+                    }
+                    if let Some(note) = &ins.note {
+                        write!(output, "\n|note=\n{note}")?;
+                    }
+                    writeln!(output, "}}}}")?;
+                }
+            }
+            writeln!(output)?;
+        }
+        println!("{}", output);
         Ok(())
     }
 }
@@ -46,6 +97,7 @@ struct ConfigInstruction {
     category: Vec<String>,
     example: Option<String>,
     note: Option<String>,
+    desc: Option<String>,
     info: crate::stationpedia::Command,
 }
 
@@ -75,6 +127,7 @@ impl<'doc> toml_edit::visit::Visit<'doc> for InstructionCollector {
                     category: self.category.clone(),
                     example: None,
                     note: None,
+                    desc: None,
                     info: self.info.take().unwrap(),
                 });
             } else if let Some(it) = node.as_array().unwrap().iter().find_map(|i| {
@@ -95,6 +148,10 @@ impl<'doc> toml_edit::visit::Visit<'doc> for InstructionCollector {
                         .get("note")
                         .and_then(|e| e.as_str())
                         .map(|s| textwrap::dedent(s).trim().to_owned()),
+                    desc: it
+                        .get("desc")
+                        .and_then(|e| e.as_str())
+                        .map(|s| textwrap::dedent(s).trim().to_owned()),
                     info: self.info.take().unwrap(),
                 });
             }
@@ -110,6 +167,23 @@ impl<'doc> toml_edit::visit::Visit<'doc> for InstructionCollector {
         }
         self.category.push(self.current_item.clone());
         toml_edit::visit::visit_table_like(self, node);
+        self.category.pop();
+    }
+}
+
+struct CategoryCollector {
+    category: Vec<String>,
+    categories: Vec<Vec<String>>,
+}
+
+impl<'doc> toml_edit::visit::Visit<'doc> for CategoryCollector {
+    fn visit_table_like_kv(&mut self, key: &'doc str, node: &'doc toml_edit::Item) {
+        if key == "instructions" {
+            return;
+        }
+        self.category.push(key.to_string());
+        self.categories.push(self.category.clone());
+        toml_edit::visit::visit_table_like_kv(self, key, node);
         self.category.pop();
     }
 }

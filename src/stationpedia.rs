@@ -14,18 +14,18 @@ pub struct Stationpedia {
 #[serde(deny_unknown_fields)]
 pub struct Reagent {
     #[serde(rename = "Hash")]
-    hash: i64,
+    pub hash: i64,
     #[serde(rename = "Unit")]
-    unit: String,
+    pub unit: String,
     #[serde(rename = "Sources")]
-    sources: Option<BTreeMap<String, f64>>,
+    pub sources: Option<BTreeMap<String, f64>>,
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Command {
-    desc: String,
-    example: String,
+    pub desc: String,
+    pub example: String,
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Serialize, Deserialize)]

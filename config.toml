@@ -1,7 +1,17 @@
 [instructions]
-[instructions.category."Utility"]
-instructions = ["alias", "define", "hcf", "sleep", "yield"]
-[instructions.category."Mathematical"]
+[instructions."Utility"]
+instructions = [{ op = "alias", example = """
+    {{MIPSCode|
+    alias dAutoHydro1 d0
+    alias vTemperature r0
+    }}
+    """ }, { op = "define", example = """
+    {{MIPSCode|
+    define ultimateAnswer 42
+    move r0 ultimateAnswer # Store 42 in register 0
+    }}
+    """ }, "hcf", "sleep", "yield"]
+[instructions."Mathematical"]
 instructions = [
     { op = "abs", example = """
     {{MIPSCode|
@@ -10,6 +20,7 @@ instructions = [
     }}
     """ },
     { op = "add", example = """
+    {{MIPSCode|add r0 r0 1 # increment r0 by one}}
     {{MIPSCode|
     define num1 10
     define num2 20
@@ -23,9 +34,9 @@ instructions = [
     }}
     """ },
     "div",
-    "exp",
+    { op = "exp", desc = "exp(a) or e^a" },
     "floor",
-    "log",
+    { op = "log", desc = "base e log(a) or ln(a)" },
     "max",
     "min",
     { op = "mod", example = """
@@ -44,10 +55,7 @@ instructions = [
     }}
     """ },
     { op = "move", example = """
-    {{MIPSCode|
-    define ultimateAnswer 42
-    move r0 ultimateAnswer # Store 42 in register 0
-    }}
+    {{MIPSCode|move r0 42 # Store 42 in register 0}}
     """ },
     "mul",
     "rand",
@@ -56,9 +64,17 @@ instructions = [
     "sub",
     "trunc",
 ]
-[instructions.category."Mathematical"."Trigonometric"]
-instructions = ["acos", "asin", "atan", "atan2", "cos", "sin", "tan"]
-[instructions.category."Stack"]
+[instructions."Mathematical"."Trigonometric"]
+instructions = [
+    { op = "acos", desc = "Returns the angle (radians) whos cos is the specified value" },
+    "asin",
+    "atan",
+    "atan2",
+    "cos",
+    "sin",
+    "tan",
+]
+[instructions."Stack"]
 instructions = [
     "clr",
     "get",
@@ -70,7 +86,7 @@ instructions = [
     "put",
     "putd",
 ]
-[instructions.category."SlotLogic"]
+[instructions."Slot/Logic"]
 instructions = [
     { op = "l", example = """
     Read from the device on d0 into register 0
@@ -103,18 +119,24 @@ instructions = [
     "sd",
     "ss",
 ]
-[instructions.category."SlotLogic"."Batched"]
+[instructions."Slot/Logic"."Batched"]
 instructions = ["lb", "lbn", "lbns", "lbs", "sb", "sbn", "sbs"]
-[instructions.category."Bitwise"]
+[instructions."Bitwise"]
 instructions = ["and", "nor", "not", "or", "sla", "sll", "sra", "srl", "xor"]
-[instructions.category."Comparison"]
-instructions = ["select"]
-[instructions.category."Comparison"."Compare Device Pin"]
+[instructions."Comparison"]
+instructions = [
+    { op = "select", note = "This operation can be used as a simple ternary condition", example = """
+    {{MIPSCode|
+    select r1 r0 10 100
+    }}
+    """ },
+]
+[instructions."Comparison"."Device Pin"]
 instructions = ["sdns", "sdse"]
-[instructions.category."Comparison"."Compare Value"]
+[instructions."Comparison"."Value"]
 instructions = [
     "sap",
-    "sapz",
+    { op = "sapz", desc = "Register = 1 if abs(a) <= max(b * abs(a), float.epsilon * 8), otherwise 0" },
     "seq",
     "seqz",
     "sge",
@@ -128,13 +150,38 @@ instructions = [
     "sna",
     "snan",
     "snanz",
-    "snaz",
+    { op = "snaz", desc = "Register = 1 if abs(a) > max(b * abs(a), float.epsilon), otherwise 0" },
     "sne",
     "snez",
 ]
-[instructions.category."Branching"]
-instructions = ["j", "jal", "jr"]
-[instructions.category."Branching"."Branch Device Pin"]
+[instructions."Branching"]
+instructions = [{ op = "j", example = """
+    {{MIPSCode|j 0 # jump line 0}}
+    {{MIPSCode|
+    j label # jump to a label
+
+    label:
+    # your code here
+    }}
+    """ }, { op = "jal", example = """
+    jal provides a way to do function calls in IC10 mips
+
+    {{MIPSCode|
+    move r0 1000
+    move r1 0
+    start:
+    jal average
+    s db Setting r0
+    yield
+    j start
+
+    average:
+    add r0 r0 r1
+    div r0 r0 2
+    j ra # jump back
+    }}
+    """ }, "jr"]
+[instructions."Branching"."Device Pin"]
 instructions = ["bdns", "bdnsal", "bdse", { op = "bdseal", example = """
     {{MIPSCode|
     #Store line number and jump to line 32 if d0 is assigned.
@@ -145,12 +192,12 @@ instructions = ["bdns", "bdnsal", "bdse", { op = "bdseal", example = """
     bdseal d0 HarvestCrop
     }}
     """ }, "brdns", "brdse"]
-[instructions.category."Branching"."Branching Comparison"]
+[instructions."Branching"."Comparison"]
 instructions = [
     "bap",
     "bapal",
-    "bapz",
-    "bapzal",
+    { op = "bapz", desc = "Branch to line c if abs(a) <= max(b * abs(a), float.epsilon * 8)" },
+    { op = "bapzal", desc = "Branch to line c if abs(a) <= max(b * abs(a), float.epsilon * 8) and store next line number in ra" },
     "beq",
     "beqal",
     "beqz",
@@ -159,7 +206,33 @@ instructions = [
     "bgeal",
     "bgez",
     "bgezal",
-    "bgt",
+    { op = "bgt", example = """
+    An example of a '''Schmitt''' trigger, turning on a device if the temperature is too low, and turning it off if it's too high and finally
+    doing nothing if the temperature is within the desired range.
+    {{MIPSCode|
+    alias sensor d0
+    alias device d1
+
+    define mintemp 293.15
+    define maxtemp 298.15
+
+    start:
+    yield
+    l r0 sensor Temperature
+    # If the temperature < mintemp, turn on the device
+    blt r0 mintemp turnOn
+    # If the temperature > maxtemp, turn off the device
+    bgt r0 maxtemp turnOff
+    j start
+
+    turnOn:
+    s device On 1
+    j start
+    turnOff:
+    s device On 0
+    j start
+    }}
+    """ },
     "bgtal",
     "bgtz",
     "bgtzal",
@@ -167,21 +240,47 @@ instructions = [
     "bleal",
     "blez",
     "blezal",
-    "blt",
+    { op = "blt", example = """
+    An example of a '''Schmitt''' trigger, turning on a device if the temperature is too low, and turning it off if it's too high and finally
+    doing nothing if the temperature is within the desired range.
+    {{MIPSCode|
+    alias sensor d0
+    alias device d1
+
+    define mintemp 293.15
+    define maxtemp 298.15
+
+    start:
+    yield
+    l r0 sensor Temperature
+    # If the temperature < mintemp, turn on the device
+    blt r0 mintemp turnOn
+    # If the temperature > maxtemp, turn off the device
+    bgt r0 maxtemp turnOff
+    j start
+
+    turnOn:
+    s device On 1
+    j start
+    turnOff:
+    s device On 0
+    j start
+    }}
+    """ },
     "bltal",
     "bltz",
     "bltzal",
     "bna",
     "bnaal",
     "bnan",
-    "bnaz",
-    "bnazal",
+    { op = "bnaz", desc = "Branch to line c if abs(a) > max (b * abs(a), float.epsilon * 8)" },
+    { op = "bnazal", desc = "Branch to line c if abs(a) > max (b * abs(a), float.epsilon * 8) and store next line number in ra" },
     "bne",
     "bneal",
     "bnez",
     "bnezal",
     "brap",
-    "brapz",
+    { op = "brapz", desc = "Relative branch to line c if abs(a) <= max(b * abs(a), float.epsilon * 8)" },
     "breq",
     "breqz",
     "brge",
@@ -194,9 +293,9 @@ instructions = [
     "brltz",
     "brna",
     "brnan",
-    "brnaz",
+    { op = "brnaz", desc = "Relative branch to line c if abs(a) > max(b * abs(a), float.epsilon * 8)" },
     "brne",
     "brnez",
 ]
-[instructions.category."Deprecated"]
+[instructions."Deprecated"]
 instructions = ["label"]
