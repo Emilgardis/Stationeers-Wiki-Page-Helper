@@ -1,0 +1,202 @@
+[instructions]
+[instructions.category."Utility"]
+instructions = ["alias", "define", "hcf", "sleep", "yield"]
+[instructions.category."Mathematical"]
+instructions = [
+    { op = "abs", example = """
+    {{MIPSCode|
+    define negativeNumber -10
+    abs r0 negativeNumber # Compute the absolute value of -10 and store it in register 0
+    }}
+    """ },
+    { op = "add", example = """
+    {{MIPSCode|
+    define num1 10
+    define num2 20
+    add r0 num1 num2 # Add 10 and 20 and store the result in register 0
+    }}
+    """ },
+    { op = "ceil", example = """
+    {{MIPSCode|
+    define floatNumber 10.3
+    ceil r0 floatNumber # Compute the ceiling of 10.3 and store it in register 0
+    }}
+    """ },
+    "div",
+    "exp",
+    "floor",
+    "log",
+    "max",
+    "min",
+    { op = "mod", example = """
+    {{MIPSCode|
+    mod r0 10 20
+    # Expected: r0 = 10
+
+    mod r1 22 20
+    # Expected: r1 = 2
+
+    mod r2 22 -20
+    # Expected: r2 = 18
+
+    mod r2 22 -10
+    # Expected: r2 = 18
+    }}
+    """ },
+    { op = "move", example = """
+    {{MIPSCode|
+    define ultimateAnswer 42
+    move r0 ultimateAnswer # Store 42 in register 0
+    }}
+    """ },
+    "mul",
+    "rand",
+    "round",
+    "sqrt",
+    "sub",
+    "trunc",
+]
+[instructions.category."Mathematical"."Trigonometric"]
+instructions = ["acos", "asin", "atan", "atan2", "cos", "sin", "tan"]
+[instructions.category."Stack"]
+instructions = [
+    "clr",
+    "get",
+    "getd",
+    "peek",
+    "poke",
+    "pop",
+    "push",
+    "put",
+    "putd",
+]
+[instructions.category."SlotLogic"]
+instructions = [
+    { op = "l", example = """
+    Read from the device on d0 into register 0
+    {{MIPSCode|l r0 d0 Setting}}
+    Read the pressure from a sensor
+    {{MIPSCode|l r1 d5 Pressure}}
+    This also works with aliases. For example:
+    {{MIPSCode|
+    alias Sensor d0
+    l r0 Sensor Temperature
+    }}
+    """ },
+    "ld",
+    "lr",
+    { op = "ls", example = """
+    Read from the second slot of device on d0, stores 1 in r0 if it's occupied, 0 otherwise.
+    {{MIPSCode|ls r0 d0 2 Occupied}}
+    And here is the code to read the charge of an AIMeE:
+    {{MIPSCode|
+    alias robot d0
+    alias charge r10
+    ls charge robot 0 Charge
+    }}
+    """ },
+    { op = "s", example = """
+    {{MIPSCode|
+    s d0 Setting r0
+    }}
+    """ },
+    "sd",
+    "ss",
+]
+[instructions.category."SlotLogic"."Batched"]
+instructions = ["lb", "lbn", "lbns", "lbs", "sb", "sbn", "sbs"]
+[instructions.category."Bitwise"]
+instructions = ["and", "nor", "not", "or", "sla", "sll", "sra", "srl", "xor"]
+[instructions.category."Comparison"]
+instructions = ["select"]
+[instructions.category."Comparison"."Compare Device Pin"]
+instructions = ["sdns", "sdse"]
+[instructions.category."Comparison"."Compare Value"]
+instructions = [
+    "sap",
+    "sapz",
+    "seq",
+    "seqz",
+    "sge",
+    "sgez",
+    "sgt",
+    "sgtz",
+    "sle",
+    "slez",
+    "slt",
+    "sltz",
+    "sna",
+    "snan",
+    "snanz",
+    "snaz",
+    "sne",
+    "snez",
+]
+[instructions.category."Branching"]
+instructions = ["j", "jal", "jr"]
+[instructions.category."Branching"."Branch Device Pin"]
+instructions = ["bdns", "bdnsal", "bdse", { op = "bdseal", example = """
+    {{MIPSCode|
+    #Store line number and jump to line 32 if d0 is assigned.
+    bdseal d0 32
+    }}
+    {{MIPSCode|
+    #Store line in ra and jump to label HarvestCrop if device d0 is assigned.
+    bdseal d0 HarvestCrop
+    }}
+    """ }, "brdns", "brdse"]
+[instructions.category."Branching"."Branching Comparison"]
+instructions = [
+    "bap",
+    "bapal",
+    "bapz",
+    "bapzal",
+    "beq",
+    "beqal",
+    "beqz",
+    "beqzal",
+    "bge",
+    "bgeal",
+    "bgez",
+    "bgezal",
+    "bgt",
+    "bgtal",
+    "bgtz",
+    "bgtzal",
+    "ble",
+    "bleal",
+    "blez",
+    "blezal",
+    "blt",
+    "bltal",
+    "bltz",
+    "bltzal",
+    "bna",
+    "bnaal",
+    "bnan",
+    "bnaz",
+    "bnazal",
+    "bne",
+    "bneal",
+    "bnez",
+    "bnezal",
+    "brap",
+    "brapz",
+    "breq",
+    "breqz",
+    "brge",
+    "brgez",
+    "brgt",
+    "brgtz",
+    "brle",
+    "brlez",
+    "brlt",
+    "brltz",
+    "brna",
+    "brnan",
+    "brnaz",
+    "brne",
+    "brnez",
+]
+[instructions.category."Deprecated"]
+instructions = ["label"]
