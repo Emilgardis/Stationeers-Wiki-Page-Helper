@@ -154,12 +154,14 @@ impl Page {
                 if i > 0 {
                     ingredients.push_str(", ");
                 }
+                // FIXME: Use correct ingredient name, Soy is for example really Soybean, Steel could be Can, etc etc
                 let amount = match name.as_str() {
                     "Iron" | "Gold" | "Carbon" | "Uranium" | "Copper" | "Steel" | "Hydrocarbon"
                     | "Silver" | "Electrum" | "Invar" | "Constantan" | "Solder" | "Silicon"
                     | "Waspaloy" | "Stellite" | "Inconel" | "Hastelloy" | "Astroloy" | "Cobalt" => {
                         "g"
                     }
+                    "Milk" | "Oil" => "ml",
                     _ => " x",
                 };
                 write!(ingredients, "{quantity}{amount} [[{name}]]")?;
