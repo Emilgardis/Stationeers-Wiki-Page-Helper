@@ -1,7 +1,6 @@
 use std::{collections::HashMap, fmt::Write as _};
 
 use regex::Regex;
-use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, clap::Parser)]
 pub struct Instructions {}

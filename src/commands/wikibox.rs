@@ -1,12 +1,6 @@
 //! Generates a wiki box for a given item.
 
-use std::{
-    collections::{BTreeMap, HashMap},
-    fmt::Write as _,
-};
-
-use regex::Regex;
-use serde_derive::{Deserialize, Serialize};
+use std::fmt::Write as _;
 
 use crate::stationpedia::{Page, Stationpedia};
 
@@ -26,26 +20,12 @@ impl Page {
     fn structure(&self, pedia: &Stationpedia) -> color_eyre::Result<Option<String>> {
         let mut out = String::new();
         let Page {
-            connection_insert,
-            constructs,
-            description,
-            device,
-            item,
             structure,
-            key,
-            logic_info,
-            logic_insert,
-            logic_slot_insert,
-            memory,
-            mode_insert,
             prefab_hash,
             prefab_name,
-            slot_inserts,
             title,
-            transmission_receiver,
-            wireless_logic,
             base_power_draw,
-            max_pressure,
+            ..
         } = &self;
         let Some(structure) = structure else {
             return Ok(None);
@@ -136,26 +116,12 @@ impl Page {
     pub fn item(&self, pedia: &Stationpedia) -> color_eyre::Result<Option<String>> {
         let mut out = String::new();
         let Page {
-            connection_insert,
             constructs,
-            description,
-            device,
             item,
-            structure,
-            key,
-            logic_info,
-            logic_insert,
-            logic_slot_insert,
-            memory,
-            mode_insert,
             prefab_hash,
             prefab_name,
-            slot_inserts,
             title,
-            transmission_receiver,
-            wireless_logic,
-            base_power_draw,
-            max_pressure,
+            ..
         } = &self;
         let Some(item) = item else {
             return Ok(None);
@@ -182,7 +148,7 @@ impl Page {
                 .enumerate()
             {
                 let name = &pedia
-                    .lookup_prefab_name(&ingredient)
+                    .lookup_prefab_name(ingredient)
                     .map(|i| &i.title)
                     .unwrap_or(ingredient);
                 if i > 0 {
@@ -234,7 +200,7 @@ impl Wikibox {
     pub(crate) fn run(
         &self,
         stationpedia: &crate::stationpedia::Stationpedia,
-        config: &toml_edit::DocumentMut,
+        _config: &toml_edit::DocumentMut,
         verbose: bool,
     ) -> color_eyre::Result<()> {
         // Pair up items that construct things with that thing.

@@ -7,7 +7,7 @@ use std::{
     sync::OnceLock,
 };
 
-use clap::{Parser, Subcommand};
+use clap::Parser;
 use color_eyre::eyre;
 
 #[derive(Debug, Parser)]

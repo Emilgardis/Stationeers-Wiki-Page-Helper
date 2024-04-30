@@ -1,4 +1,3 @@
-use serde::Deserialize as _;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
