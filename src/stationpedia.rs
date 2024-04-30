@@ -1,13 +1,28 @@
+use serde::Deserialize as _;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "Stationpedia", deny_unknown_fields)]
 pub struct Stationpedia {
     pub pages: Vec<Page>,
     pub reagents: BTreeMap<String, Reagent>,
     #[serde(rename = "scriptCommands")]
     pub script_commands: BTreeMap<String, Command>,
+}
+
+impl Stationpedia {
+    pub fn lookup_prefab_name(&self, prefab_name: &'_ str) -> Option<&Page> {
+        self.pages.iter().find(|p| p.prefab_name == prefab_name)
+    }
+
+    pub fn lookup_key(&self, key: &str) -> Option<&Page> {
+        self.pages.iter().find(|p| p.key == key)
+    }
+
+    pub fn lookup_hash(&self, hash: i64) -> Option<&Page> {
+        self.pages.iter().find(|p| p.prefab_hash == hash)
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -28,18 +43,22 @@ pub struct Command {
     pub example: String,
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Page {
     #[serde(rename = "ConnectionInsert")]
     pub connection_insert: Vec<ConnectionInsert>,
+    #[serde(rename = "ConstructedByKits")]
+    pub constructs: Vec<Constructs>,
     #[serde(rename = "Description")]
     pub description: String,
     #[serde(rename = "Device")]
     pub device: Option<Device>,
-    /// the item name, if none then deprecated
+    /// the item , if none then deprecated
     #[serde(rename = "Item")]
     pub item: Option<Item>,
+    #[serde(rename = "Structure")]
+    pub structure: Option<Structure>,
     #[serde(rename = "Key")]
     pub key: String,
     #[serde(rename = "LogicInfo")]
@@ -64,6 +83,66 @@ pub struct Page {
     pub transmission_receiver: Option<bool>,
     #[serde(rename = "WirelessLogic")]
     pub wireless_logic: Option<bool>,
+    #[serde(rename = "BasePowerDraw")]
+    pub base_power_draw: Option<String>,
+    #[serde(rename = "MaxPressure")]
+    pub max_pressure: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Constructs {
+    #[serde(rename = "NameOfThing")]
+    pub name_of_thing: String,
+    #[serde(rename = "PageLink")]
+    pub page_link: String,
+    #[serde(rename = "PrefabHash")]
+    pub prefab_hash: i64,
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Structure {
+    #[serde(rename = "SmallGrid")]
+    pub small_grid: bool,
+    #[serde(rename = "BuildStates")]
+    pub build_states: BuildStates,
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+pub struct BuildStates(pub Vec<BuildState>);
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildState {
+    #[serde(rename = "Tool")]
+    pub tool: Option<Vec<Tool>>,
+    #[serde(rename = "ToolExit")]
+    pub tool_exit: Option<Vec<Tool>>,
+    #[serde(rename = "CanManufacture", default)]
+    pub can_manufacture: bool,
+    #[serde(rename = "MachineTier")]
+    pub machine_tier: Option<MachineTier>,
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+pub enum MachineTier {
+    Undefined,
+    TierOne,
+    TierTwo,
+    TierThree,
+    Max,
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Tool {
+    #[serde(rename = "IsTool", default)]
+    pub is_tool: bool,
+    #[serde(rename = "PrefabName")]
+    pub prefab_name: String,
+    #[serde(rename = "Quantity")]
+    pub quantity: Option<i64>,
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
@@ -148,6 +227,7 @@ pub struct Memory {
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Instruction {
     #[serde(rename = "Description")]
     pub description: String,
@@ -157,7 +237,8 @@ pub struct Instruction {
     pub value: i64,
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Item {
     #[serde(rename = "Consumable")]
     pub consumable: Option<bool>,
@@ -168,11 +249,69 @@ pub struct Item {
     #[serde(rename = "MaxQuantity")]
     pub max_quantity: Option<f64>,
     #[serde(rename = "Reagents")]
-    pub reagents: Option<BTreeMap<String, f64>>,
+    pub reagents: Option<indexmap::IndexMap<String, f64>>,
     #[serde(rename = "SlotClass")]
     pub slot_class: String,
     #[serde(rename = "SortingClass")]
     pub sorting_class: String,
+    #[serde(rename = "Recipes", default)]
+    pub recipes: Vec<Recipe>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Recipe {
+    #[serde(rename = "CreatorPrefabName")]
+    pub creator_prefab_name: String,
+    #[serde(rename = "TierName")]
+    pub tier_name: String,
+    #[serde(rename = "Time")]
+    pub time: f64,
+    #[serde(rename = "Energy")]
+    pub energy: f64,
+    #[serde(rename = "Temperature")]
+    pub temperature: RecipeTemperature,
+    #[serde(rename = "Pressure")]
+    pub pressure: RecipePressure,
+    #[serde(rename = "RequiredMix")]
+    pub required_mix: RecipeGasMix,
+    #[serde(rename = "CountTypes")]
+    pub count_types: i64,
+    #[serde(flatten)]
+    pub reagents: indexmap::IndexMap<String, f64>,
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RecipeTemperature {
+    #[serde(rename = "Start")]
+    pub start: f64,
+    #[serde(rename = "Stop")]
+    pub stop: f64,
+    #[serde(rename = "IsValid")]
+    pub is_valid: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RecipePressure {
+    #[serde(rename = "Start")]
+    pub start: f64,
+    #[serde(rename = "Stop")]
+    pub stop: f64,
+    #[serde(rename = "IsValid")]
+    pub is_valid: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Serialize, Deserialize)]
+pub struct RecipeGasMix {
+    #[serde(rename = "Rule")]
+    pub rule: i64,
+    #[serde(rename = "IsAny")]
+    pub is_any: bool,
+    #[serde(rename = "IsAnyToRemove")]
+    pub is_any_to_remove: bool,
+    #[serde(flatten)]
+    pub reagents: BTreeMap<String, f64>,
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
