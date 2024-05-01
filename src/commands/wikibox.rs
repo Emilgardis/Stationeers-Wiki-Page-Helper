@@ -126,14 +126,21 @@ impl Page {
         let Some(item) = item else {
             return Ok(None);
         };
-        out.push_str(&textwrap::dedent(&format!(
-            "
+        out.push_str(
+            textwrap::dedent(&format!(
+                "
                 {{{{Itembox
                 | name = {title}
                 | image = [[File:{prefab_name}.png]]
                 | prefabhash = {prefab_hash}
-                | prefabname = {prefab_name}\n"
-        )));
+                | prefabname = {prefab_name}
+            "
+            ))
+            .trim_start(),
+        );
+
+        writeln!(out, "| slot_class = SlotClass.{}", item.slot_class)?;
+        writeln!(out, "| sorting_class = SortingClass.{}", item.sorting_class)?;
 
         if let Some(q) = item.max_quantity {
             writeln!(out, "| stacks = {q}")?;
