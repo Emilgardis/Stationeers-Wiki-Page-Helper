@@ -120,9 +120,23 @@ instructions = [
     "ss",
 ]
 [instructions."Slot/Logic"."Batched"]
-instructions = ["lb", "lbn", "lbns", "lbs", "sb", "sbn", "sbs"]
+instructions = [{ op = "lb", example = """
+    {{MIPSCode|lb r0 HASH("StructureWallLight") On Sum}}
+    """ }, "lbn", "lbns", "lbs", { op = "sb", example = """
+    {{MIPSCode|sb HASH("StructureWallLight") On 1}}
+    """ }, "sbn", "sbs"]
 [instructions."Bitwise"]
-instructions = ["and", "nor", "not", "or", "sla", "sll", "sra", "srl", "xor"]
+instructions = [
+    "and",
+    "nor",
+    { op = "not", note = "This is a bitwise operation, the NOT of 1 => -2, etc. You may want to use seqz instead" },
+    "or",
+    "sla",
+    "sll",
+    "sra",
+    "srl",
+    "xor",
+]
 [instructions."Comparison"]
 instructions = [
     { op = "select", note = "This operation can be used as a simple ternary condition", example = """
