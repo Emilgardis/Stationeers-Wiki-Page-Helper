@@ -50,7 +50,7 @@ impl Page {
             "Large"
         };
         writeln!(out, "| placed_on_grid = {grid} Grid")?;
-
+        let mut rec = None;
         for (count, state) in structure.build_states.0.iter().enumerate() {
             let rcount = count + 1;
             if let Some(exit) = &state.tool_exit {
@@ -86,26 +86,34 @@ impl Page {
                         } else {
                             writeln!(out, "| const_with_tool{count} = [[{name}]]")?;
                         }
+                        rec = None;
                     }
                     if let Some(tool2) = tool.get(1) {
                         let name = &pedia.lookup_prefab_name(&tool2.prefab_name).unwrap().title;
                         if let Some(quantity) = tool2.quantity {
                             writeln!(out, "| const_with_item{count} = {quantity} x [[{name}]]")?;
+                            rec = Some(format!("{quantity} x [[{name}]]"));
                         } else {
                             writeln!(out, "| const_with_item{count} = [[{name}]]")?;
+                            rec = Some(format!("[[{name}]]"));
                         }
                     }
                 } else if let Some(tool1) = tool.first() {
                     let name = &pedia.lookup_prefab_name(&tool1.prefab_name).unwrap().title;
                     if let Some(quantity) = tool1.quantity {
                         writeln!(out, "| const_with_item{count} = {quantity} x [[{name}]]")?;
+                        rec = Some(format!("{quantity} x [[{name}]]"));
                     } else {
                         writeln!(out, "| const_with_item{count} = [[{name}]]")?;
+                        rec = Some(format!("[[{name}]]"));
                     }
                     if tool.len() > 1 {
                         panic!()
                     }
                 }
+            }
+            if let Some(rec) = &rec {
+                writeln!(out, "| item_rec{rcount} = {rec}")?;
             }
         }
         write!(out, "}}}}")?;
@@ -138,13 +146,11 @@ impl Page {
             ))
             .trim_start(),
         );
+        writeln!(out, "| stacks = {}", item.max_quantity.unwrap_or(1.0))?;
 
         writeln!(out, "| slot_class = SlotClass.{}", item.slot_class)?;
         writeln!(out, "| sorting_class = SortingClass.{}", item.sorting_class)?;
 
-        if let Some(q) = item.max_quantity {
-            writeln!(out, "| stacks = {q}")?;
-        }
         let mut count = 1;
         for recipe in &item.recipes {
             let mut ingredients = String::new();
@@ -199,6 +205,78 @@ impl Page {
                 .join(", ");
 
             writeln!(out, "| constructs = {contructs}")?;
+        }
+        write!(out, "}}}}")?;
+        Ok(Some(out))
+    }
+
+    pub fn item_recipe(&self, pedia: &Stationpedia) -> color_eyre::Result<Option<String>> {
+        let mut out = String::new();
+        let Page {
+            item,
+            prefab_hash,
+            prefab_name,
+            title,
+            ..
+        } = &self;
+        let Some(item) = item else {
+            return Ok(None);
+        };
+        // {{Recipe
+        // |{{Recipe/row |machine = Autolathe  |mats = 10g [[Iron]], 2g [[Copper]] |time = 10 |energy = 500}}
+        // |{{Recipe/row |machine = Fabricator |mats = 10g [[Iron]], 2g [[Copper]] |time = 1 |energy = 500}}
+        // |{{Recipe/row |machine = Recycler   |mats = 5g [[Iron]], 1g [[Copper]]  |time = 10 |energy = 1000}}
+        // }}
+        if item.recipes.is_empty() {
+            return Ok(None);
+        }
+        out.push_str(
+            textwrap::dedent(&format!(
+                "
+                {{{{Recipe
+            "
+            ))
+            .trim_start(),
+        );
+        for recipe in &item.recipes {
+            let mut ingredients = String::new();
+            for (i, (ingredient, quantity)) in recipe
+                .reagents
+                .iter()
+                .filter(|(_, q)| *q > &0.0)
+                .enumerate()
+            {
+                let name = &pedia
+                    .lookup_prefab_name(ingredient)
+                    .map(|i| &i.title)
+                    .unwrap_or(ingredient);
+                if i > 0 {
+                    ingredients.push_str(", ");
+                }
+                // FIXME: Use correct ingredient name, Soy is for example really Soybean, Steel could be Can, etc etc
+                let amount = match name.as_str() {
+                    "Iron" | "Gold" | "Carbon" | "Uranium" | "Copper" | "Steel" | "Hydrocarbon"
+                    | "Silver" | "Electrum" | "Invar" | "Constantan" | "Solder" | "Silicon"
+                    | "Waspaloy" | "Stellite" | "Inconel" | "Hastelloy" | "Astroloy" | "Cobalt" => {
+                        "g"
+                    }
+                    "Milk" | "Oil" => "ml",
+                    _ => " x",
+                };
+                write!(ingredients, "{quantity}{amount} [[{name}]]")?;
+            }
+            let creator = &pedia
+                .lookup_prefab_name(&recipe.creator_prefab_name)
+                .unwrap()
+                .title;
+            let tier = if recipe.tier_name == "TierTwo" {
+                " (Tier Two)"
+            } else {
+                ""
+            };
+            let time = recipe.time;
+            let energy = recipe.energy;
+            writeln!(out, "|{{{{Recipe/row |machine = {creator}{tier} |mats = {ingredients} |time = {time} |energy = {energy}}}}}")?;
         }
         write!(out, "}}}}")?;
         Ok(Some(out))
@@ -258,6 +336,10 @@ impl Wikibox {
         }
 
         if let Some(item) = page.item(stationpedia)? {
+            println!("\n{}", item);
+        }
+
+        if let Some(item) = page.item_recipe(stationpedia)? {
             println!("\n{}", item);
         }
 
