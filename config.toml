@@ -317,3 +317,7 @@ instructions = ["label"]
 [bot]
 api_url = "https://stationeers-wiki.com/api.php"
 rest_url = "https://stationeers-wiki.com/rest.php"
+[stationpedia]
+[stationpedia.links]
+Xigo = "Xigo (Faction)"
+CartridgePage = "Cartridge"

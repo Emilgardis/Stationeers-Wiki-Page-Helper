@@ -279,6 +279,71 @@ impl Page {
         write!(out, "}}}}")?;
         Ok(Some(out))
     }
+
+    pub fn description(
+        &self,
+        pedia: &Stationpedia,
+        config: &toml_edit::DocumentMut,
+    ) -> color_eyre::Result<Option<String>> {
+        if self.description.is_empty() {
+            return Ok(None);
+        }
+        let mut out = String::new();
+        out.push_str(&textwrap::dedent(
+            "
+            == Stationpedia Description ==
+            ",
+        ));
+        // description looks like html, example: The advanced <link=Xigo><color=#0080FFFF>Xigo</color></link> Padi 2 tablet is an improved version of the basic <link=ThingItemTablet><color=green>Handheld Tablet</color></link>, boasting two <link=CartridgePage><color=#0080FFFF>cartridge</color></link> slots. The Padi 2 accepts <link=ThingCartridgeAtmosAnalyser><color=green>Atmos Analyzer</color></link>, <link=ThingCartridgeTracker><color=green>Tracker</color></link>, <link=ThingCartridgeMedicalAnalyser><color=green>Medical Analyzer</color></link>, <link=ThingCartridgeOreScanner><color=green>Ore Scanner</color></link>, <link=ThingCartridgeElectronicReader><color=green>eReader</color></link>, and various other cartridges.\n\t  \n\t  With a <link=ThingItemIntegratedCircuit10><color=green>Integrated Circuit (IC10)</color></link> in the <link=SlotProgrammableChip><color=orange>Programmable Chip</color></link>, you can access variable slots on the carrying human using the device numbers (d0, d1, etc...), so long as the item can be access via logic, such as the <link=ThingItemHardSuit><color=green>Hardsuit</color></link>.Connects to <pos=300><link=ThingStructureLogicTransmitter><color=green>Logic Transmitter</color></link>
+        // we need to replace <link>s with proper wiki links.
+        // For example:
+        // Xigo is a faction, which should link to `Xigo (faction)`
+        // ThingItemTablet should link to that key in the stationpedia, e.g [[Handheld Tablet]] which is the displayname of ThingItemTablet
+        // etc
+
+        // Implementation for all descriptions
+        let re = regex::Regex::new(r"<color=.*?>|</color>").unwrap();
+        let description = re.replace_all(&self.description, "").to_string();
+
+        // then we walk through each link and replace it with the proper wiki link, we do this by splitting the string on <link=
+        // then we split on > to get the link and the text and finally insert the proper wiki link and rest of text
+        let split = description.split("<link=");
+        for link in split {
+            tracing::debug!("split: {}", link);
+            let Some((thing, rest)) = link.split_once('>') else {
+                out.push_str(link);
+                continue;
+            };
+            let (display, rest) = rest.split_once("</link>").unwrap();
+            if let Some(link) = config
+                .get("stationpedia")
+                .and_then(|c| c.get("links"))
+                .and_then(|c| c.get(thing))
+                .and_then(|c| c.as_str())
+            {
+                if link == display {
+                    out.push_str(&format!("[[{}]]", link));
+                } else {
+                    out.push_str(&format!("[[{}|{}]]", link, display));
+                }
+            } else if let Some(item) = pedia.lookup_key(thing) {
+                if item.title == display {
+                    out.push_str(&format!("[[{}]]", item.title));
+                } else {
+                    out.push_str(&format!("[[{}|{}]]", item.title, display));
+                }
+            } else if let Some(slot) = thing.strip_prefix("Slot") {
+                out.push_str(&format!("{} slot", slot));
+            } else {
+                out.push_str(&format!("[[{}|{}]]", thing, display));
+            }
+            out.push_str(rest)
+        }
+        // now, replace all leftover tags
+        let re = regex::Regex::new(r"<[^>]+>").unwrap();
+        let out = re.replace_all(&out, "").to_string();
+        Ok(Some(out))
+    }
 }
 
 fn recipe_amount<'a>(
@@ -349,7 +414,7 @@ impl Wikibox {
     pub(crate) fn run(
         &self,
         stationpedia: &crate::stationpedia::Stationpedia,
-        _config: &toml_edit::DocumentMut,
+        config: &toml_edit::DocumentMut,
         verbose: bool,
     ) -> color_eyre::Result<()> {
         // Pair up items that construct things with that thing.
@@ -401,12 +466,16 @@ impl Wikibox {
             println!("\n{}", item);
         }
 
-        if let Some(item) = page.item_recipe(stationpedia)? {
-            println!("\n{}", item);
-        }
-
         if let Some(structure) = page.structure(stationpedia)? {
             println!("\n{}", structure);
+        }
+
+        if let Some(description) = page.description(stationpedia, config)? {
+            println!("\n{}", description);
+        }
+
+        if let Some(item) = page.item_recipe(stationpedia)? {
+            println!("\n{}", item);
         }
 
         Ok(())
