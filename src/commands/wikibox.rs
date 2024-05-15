@@ -1,6 +1,6 @@
 //! Generates a wiki box for a given item.
 
-use std::{borrow::Cow, fmt::Write as _};
+use std::fmt::Write as _;
 
 use crate::stationpedia::{Page, Stationpedia};
 
@@ -220,13 +220,7 @@ impl Page {
 
     pub fn item_recipe(&self, pedia: &Stationpedia) -> color_eyre::Result<Option<String>> {
         let mut out = String::new();
-        let Page {
-            item,
-            prefab_hash,
-            prefab_name,
-            title,
-            ..
-        } = &self;
+        let Page { item, .. } = &self;
         let Some(item) = item else {
             return Ok(None);
         };
@@ -239,12 +233,12 @@ impl Page {
             return Ok(None);
         }
         out.push_str(
-            textwrap::dedent(&format!(
+            textwrap::dedent(
                 "
                 == Recipes ==
-                {{{{Recipe
-            "
-            ))
+                {{Recipe
+            ",
+            )
             .trim_start(),
         );
         for recipe in &item.recipes {
@@ -255,7 +249,7 @@ impl Page {
                 .filter(|(_, q)| *q > &0.0)
                 .enumerate()
             {
-                let name = &pedia
+                let _name = &pedia
                     .lookup_prefab_name(ingredient)
                     .map(|i| &i.title)
                     .unwrap_or(ingredient);
@@ -344,9 +338,9 @@ fn recipe_amount<'a>(
     let amount = match ingredient {
         "Iron" | "Gold" | "Carbon" | "Uranium" | "Copper" | "Steel" | "Hydrocarbon" | "Silver"
         | "Electrum" | "Invar" | "Constantan" | "Solder" | "Silicon" | "Waspaloy" | "Stellite"
-        | "Inconel" | "Hastelloy" | "Astroloy" | "Cobalt" | "Flour" => ("g"),
-        "Milk" | "Soy Oil" => ("ml"),
-        _ => (" x"),
+        | "Inconel" | "Hastelloy" | "Astroloy" | "Cobalt" | "Flour" => "g",
+        "Milk" | "Soy Oil" => "ml",
+        _ => " x",
     };
     (amount, ingredient)
 }

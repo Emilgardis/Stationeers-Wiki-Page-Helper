@@ -1,10 +1,8 @@
 //! Query items on wiki
 
-use std::fmt::Write as _;
-
 use color_eyre::eyre;
 
-use crate::stationpedia::{Page, Stationpedia};
+use crate::stationpedia::Stationpedia;
 
 #[derive(Debug, clap::Parser)]
 pub struct Query {
@@ -25,9 +23,9 @@ impl Query {
     }
     pub(crate) async fn _run(
         &self,
-        stationpedia: &Stationpedia,
+        _stationpedia: &Stationpedia,
         config: &toml_edit::DocumentMut,
-        verbose: bool,
+        _verbose: bool,
     ) -> color_eyre::Result<()> {
         let client = mwapi::Client::builder(
             config["bot"]["api_url"]
@@ -36,7 +34,11 @@ impl Query {
         )
         .build()
         .await?;
-        dbg!(client.get_value(&[("action", "query"), ("prop", "info"), ("titles", "MIPS")]).await?);
+        dbg!(
+            client
+                .get_value(&[("action", "query"), ("prop", "info"), ("titles", "MIPS")])
+                .await?
+        );
         Ok(())
     }
 }
