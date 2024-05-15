@@ -27,6 +27,7 @@ impl Instructions {
             toml_edit::visit::visit_table(&mut col, i);
 
             let Some(ins) = col.actual_instruction.as_ref() else {
+                tracing::info!("skipping instruction {}", instruction);
                 continue;
             };
 
@@ -51,7 +52,7 @@ See [[MIPS]] for the primary page for IC10 MIPS. This page lists all available i
         toml_edit::visit::visit_table(&mut colcat, config["instructions"].as_table().unwrap());
         let categories = colcat.categories;
         let re = Regex::new(r"</?[^>]+>").unwrap();
-        for category in categories {
+        for category in &categories {
             if category.first().is_some_and(|s| s == "Deprecated") {
                 continue;
             }
@@ -62,32 +63,44 @@ See [[MIPS]] for the primary page for IC10 MIPS. This page lists all available i
                 category.join(" / "),
             ));
 
-            if let Some(inss) = instructions.get(&category) {
-                for ins in inss {
-                    let command = &ins.command;
-                    let real_desc = &ins.info.desc.replace('|', "{{!}}");
-                    let desc = if let Some(desc) = &ins.desc {
-                        desc
-                    } else {
-                        real_desc
-                    };
-                    let syntax = ins.info.example.replace('|', "{{!}}");
-                    let syntax = re.replace_all(&syntax, "");
-                    write!(output, "{{{{MIPSInstruction|instruction={command}|description={desc}|syntax={syntax}")?;
-                    if let Some(example) = &ins.example {
-                        write!(output, "\n|example=\n{example}")?;
-                    }
-                    if let Some(note) = &ins.note {
-                        write!(output, "\n|note=\n{note}")?;
-                    }
-                    writeln!(output, "}}}}")?;
-                }
+            if let Some(inss) = instructions.get(category) {
+                render(inss, &re, &mut output)?;
             }
             writeln!(output)?;
         }
         println!("{}", output);
         Ok(())
     }
+}
+
+fn render(
+    inss: &[ConfigInstruction],
+    re: &Regex,
+    output: &mut String,
+) -> Result<(), color_eyre::eyre::Error> {
+    for ins in inss {
+        let command = &ins.command;
+        let real_desc = &ins.info.desc.replace('|', "{{!}}");
+        let desc = if let Some(desc) = &ins.desc {
+            desc
+        } else {
+            real_desc
+        };
+        let syntax = ins.info.example.replace('|', "{{!}}");
+        let syntax = re.replace_all(&syntax, "");
+        write!(
+            output,
+            "{{{{MIPSInstruction|instruction={command}|description={desc}|syntax={syntax}"
+        )?;
+        if let Some(example) = &ins.example {
+            write!(output, "\n|example=\n{example}")?;
+        }
+        if let Some(note) = &ins.note {
+            write!(output, "\n|note=\n{note}")?;
+        }
+        writeln!(output, "}}}}")?;
+    }
+    Ok(())
 }
 
 #[derive(Debug, Clone)]

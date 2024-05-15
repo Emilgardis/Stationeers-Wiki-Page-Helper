@@ -26,7 +26,12 @@ struct Cli {
 
 fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt::SubscriberBuilder::default()
+        .with_writer(std::io::stderr)
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::from_default_env().add_directive("info".parse()?),
+        )
+        .init();
     let cli = Cli::parse();
 
     let pedia: stationpedia::Stationpedia =
