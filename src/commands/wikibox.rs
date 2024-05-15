@@ -1,6 +1,6 @@
 //! Generates a wiki box for a given item.
 
-use std::fmt::Write as _;
+use std::{borrow::Cow, fmt::Write as _};
 
 use crate::stationpedia::{Page, Stationpedia};
 
@@ -129,6 +129,7 @@ impl Page {
             prefab_hash,
             prefab_name,
             title,
+            growth_time,
             ..
         } = &self;
         let Some(item) = item else {
@@ -167,17 +168,11 @@ impl Page {
                 if i > 0 {
                     ingredients.push_str(", ");
                 }
-                // FIXME: Use correct ingredient name, Soy is for example really Soybean, Steel could be Can, etc etc
-                let amount = match name.as_str() {
-                    "Iron" | "Gold" | "Carbon" | "Uranium" | "Copper" | "Steel" | "Hydrocarbon"
-                    | "Silver" | "Electrum" | "Invar" | "Constantan" | "Solder" | "Silicon"
-                    | "Waspaloy" | "Stellite" | "Inconel" | "Hastelloy" | "Astroloy" | "Cobalt" => {
-                        "g"
-                    }
-                    "Milk" | "Oil" => "ml",
-                    _ => " x",
-                };
-                write!(ingredients, "{quantity}{amount} [[{name}]]")?;
+                let (amount, ingredient) = recipe_amount(pedia, name, &recipe.creator_prefab_name);
+                write!(ingredients, "{quantity}{amount} [[{ingredient}]]")?;
+            }
+            if recipe.creator_prefab_name == "StructureOrganicsPrinter" {
+                continue;
             }
             let creator = &pedia
                 .lookup_prefab_name(&recipe.creator_prefab_name)
@@ -206,6 +201,19 @@ impl Page {
 
             writeln!(out, "| constructs = {contructs}")?;
         }
+
+        if let Some(food) = &item.food {
+            if food.nutrition_value.is_some_and(|v| v > 0.0) {
+                writeln!(out, "| nutrition = {}", food.nutrition_value.unwrap())?;
+                writeln!(out, "| quality = {}", food.nutrition_quality_readable)?;
+                if let Some(bonus) = food.mood_bonus.filter(|v| v != &0.0) {
+                    writeln!(out, "| moodbonus = {}%", bonus * 100.0)?;
+                }
+            }
+        }
+        if let Some(growth_time) = &growth_time {
+            writeln!(out, "| growthtime = {}", growth_time)?;
+        }
         write!(out, "}}}}")?;
         Ok(Some(out))
     }
@@ -233,6 +241,7 @@ impl Page {
         out.push_str(
             textwrap::dedent(&format!(
                 "
+                == Recipes ==
                 {{{{Recipe
             "
             ))
@@ -253,17 +262,12 @@ impl Page {
                 if i > 0 {
                     ingredients.push_str(", ");
                 }
-                // FIXME: Use correct ingredient name, Soy is for example really Soybean, Steel could be Can, etc etc
-                let amount = match name.as_str() {
-                    "Iron" | "Gold" | "Carbon" | "Uranium" | "Copper" | "Steel" | "Hydrocarbon"
-                    | "Silver" | "Electrum" | "Invar" | "Constantan" | "Solder" | "Silicon"
-                    | "Waspaloy" | "Stellite" | "Inconel" | "Hastelloy" | "Astroloy" | "Cobalt" => {
-                        "g"
-                    }
-                    "Milk" | "Oil" => "ml",
-                    _ => " x",
-                };
-                write!(ingredients, "{quantity}{amount} [[{name}]]")?;
+                let (amount, ingredient) =
+                    recipe_amount(pedia, ingredient, &recipe.creator_prefab_name);
+                write!(ingredients, "{quantity}{amount} [[{ingredient}]]")?;
+            }
+            if recipe.creator_prefab_name == "StructureOrganicsPrinter" {
+                continue;
             }
             let creator = &pedia
                 .lookup_prefab_name(&recipe.creator_prefab_name)
@@ -281,6 +285,70 @@ impl Page {
         write!(out, "}}}}")?;
         Ok(Some(out))
     }
+}
+
+fn recipe_amount<'a>(
+    pedia: &'a Stationpedia,
+    ingredient: &'a str,
+    creator_prefab_name: &str,
+) -> (&'static str, &'a str) {
+    // FIXME: Use correct ingredient name, Soy is for example really Soybean, Steel could be Can, etc etc
+
+    let ingredient = match creator_prefab_name {
+        "ApplianceMicrowave" | "StructureAutomatedOven" => {
+            // takes uncooked items.
+            pedia
+                .pages
+                .iter()
+                .filter_map(|p| p.item.as_ref().map(|item| (p, item)))
+                .filter(|(_, i)| i.reagents.is_some())
+                .filter(|(_, i)| {
+                    i.reagents
+                        .as_ref()
+                        .unwrap()
+                        .iter()
+                        .any(|(r, a)| r == ingredient && a > &0.0)
+                })
+                .find(|(_, item)| item.food.as_ref().is_some_and(|f| f.nutrition_quality == 1))
+                .map(|(i, _)| &*i.title)
+                .unwrap_or(ingredient)
+        }
+        "AppliancePackagingMachine" | "StructureAdvancedPackagingMachine" => match ingredient {
+            "Steel" => "Empty Can",
+            _ => pedia
+                .pages
+                .iter()
+                .filter_map(|p| p.item.as_ref().map(|item| (p, item)))
+                .filter(|(_, i)| i.reagents.is_some())
+                .filter(|(_, i)| {
+                    i.reagents
+                        .as_ref()
+                        .unwrap()
+                        .iter()
+                        .any(|(r, a)| r == ingredient && a > &0.0)
+                })
+                .find(|(_, item)| {
+                    item.food
+                        .as_ref()
+                        .is_some_and(|f| f.nutrition_quality == 2 || ingredient == "Oil")
+                })
+                .map(|(i, _)| &*i.title)
+                .unwrap_or(ingredient),
+        },
+        "ApplianceChemistryStation" => match ingredient {
+            "Fenoxitone" => "Fern",
+            _ => ingredient,
+        },
+        _ => ingredient,
+    };
+    let amount = match ingredient {
+        "Iron" | "Gold" | "Carbon" | "Uranium" | "Copper" | "Steel" | "Hydrocarbon" | "Silver"
+        | "Electrum" | "Invar" | "Constantan" | "Solder" | "Silicon" | "Waspaloy" | "Stellite"
+        | "Inconel" | "Hastelloy" | "Astroloy" | "Cobalt" | "Flour" => ("g"),
+        "Milk" | "Soy Oil" => ("ml"),
+        _ => (" x"),
+    };
+    (amount, ingredient)
 }
 
 impl Wikibox {

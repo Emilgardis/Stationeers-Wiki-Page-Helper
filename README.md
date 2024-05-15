@@ -3,7 +3,7 @@ Generate pages for [stationeers wiki](https://stationeers-wiki.com)
 
 # Pre-req
 
-Generate the `Stationpedia.json` using [Ryex/StationeersStationpediaExtractor](https://github.com/Ryex/StationeersStationpediaExtractor), place the file in this repo.
+Generate the `Stationpedia.json` and `Enums.json` using a fork of [StationeersStationpediaExtractor](https://github.com/Emilgardis/StationeersStationpediaExtractor), place the files in this repo.
 
 # Commands
 
