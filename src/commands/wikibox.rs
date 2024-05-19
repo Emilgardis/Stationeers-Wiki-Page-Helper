@@ -2,7 +2,10 @@
 
 use std::fmt::Write as _;
 
-use crate::stationpedia::{Page, Stationpedia};
+use crate::{
+    enums::Enums,
+    stationpedia::{Page, Stationpedia},
+};
 
 #[derive(Debug, clap::Parser)]
 pub struct Wikibox {
@@ -344,6 +347,125 @@ impl Page {
         let out = re.replace_all(&out, "").to_string();
         Ok(Some(out))
     }
+
+    pub fn data_network_properties(
+        &self,
+        pedia: &Stationpedia,
+        enums: &Enums,
+        config: &toml_edit::DocumentMut,
+    ) -> color_eyre::Result<Option<String>> {
+        let mut out = String::new();
+        let Page {
+            logic_info: Some(logic_info),
+            mode_insert,
+            ..
+        } = &self
+        else {
+            return Ok(None);
+        };
+
+        out.push_str("{{Data Network Header}}\n");
+
+        if !logic_info.logic_types.types.is_empty() {
+            out.push_str("{{Data Parameters|");
+            for (logic_type, rw) in logic_info.logic_types.types.iter() {
+                // {{Data Parameters/row|Mode|0|a}}
+                write!(out, "\n{{{{Data Parameters/row|{logic_type}")?;
+                let conf = config
+                    .get("logic")
+                    .and_then(|e| e.get("types"))
+                    .and_then(|t| t.get(logic_type));
+                let ty: &str;
+                if let Some(typ) = conf.and_then(|i| i.get("type")) {
+                    ty = typ.as_str().unwrap();
+                } else {
+                    ty = "Integer";
+                }
+                write!(out, "|{ty}");
+                if !rw.contains("Read") {
+                    out.push_str("|r=0");
+                }
+                if !rw.contains("Write") {
+                    out.push_str("|w=0");
+                }
+                let enum_desc = |out: &mut String| -> color_eyre::Result<()> {
+                    if let Some(lt) = enums
+                        .script_enums
+                        .get("LogicType")
+                        .and_then(|lt| lt.values.get(logic_type))
+                    {
+                        write!(out, "|{}", lt.description)?;
+                    }
+                    Ok(())
+                };
+                tracing::info!(?conf);
+                if let Some(desc) = conf.and_then(|i| i.get("description")) {
+                    if let Some(desc) = desc.as_str() {
+                        write!(out, "|{}", desc)?;
+                    } else if let Some(table) = desc.as_table_like() {
+                        if let Some(desc) = table.get(&self.prefab_name) {
+                            write!(out, "|{}", desc.as_str().unwrap())?;
+                        } else if let Some(desc) = table.get("default") {
+                            write!(out, "|{}", desc.as_str().unwrap())?;
+                        } else {
+                            enum_desc(&mut out)?;
+                        }
+                    }
+                } else {
+                    enum_desc(&mut out)?;
+                }
+                'values: {
+                    'conf: {
+                        if let Some(values) = conf.and_then(|i| i.get("values")) {
+                            let values = if let Some(table) = values.as_table_like() {
+                                if let Some(entry) = table.get(&self.prefab_name) {
+                                    entry
+                                } else if let Some(entry) = table.get("default") {
+                                    entry
+                                } else {
+                                    break 'conf;
+                                }
+                            } else {
+                                values
+                            };
+                            if let Some(arr) = values.as_array() {
+                                write!(out, "|multiple={}", arr.len());
+                                for (e, v) in arr.iter().map(|v| v.as_str().unwrap()).enumerate() {
+                                    write!(out, "|{e}|{v}")?;
+                                }
+                                break 'values;
+                            } else if let Some(str) = values.as_str() {
+                                write!(out, "|{}", str)?;
+                                break 'values;
+                            } else if let Some(table) = values.as_table_like() {
+                                write!(out, "|multiple={}", table.len());
+                                for (k, v) in table.iter() {
+                                    write!(out, "|{}|{}", k, v.as_str().unwrap())?;
+                                }
+                                break 'values;
+                            }
+                        }
+                    }
+                    if logic_type == "Mode" && !mode_insert.is_empty() {
+                        write!(out, "|multiple={}", mode_insert.len());
+                        for (e, v) in mode_insert.iter().enumerate() {
+                            write!(out, "|{e}|{}", v.logic_name)?;
+                        }
+                    } else if ty == "Boolean" {
+                        write!(out, "|0 or 1")?;
+                    }
+                }
+
+                out.push_str("}}");
+            }
+            out.push_str("\n}}\n");
+        } else {
+            out.push_str("|{{Data Parameters|empty=}}\n");
+        }
+        out = out.replace("{device}", &self.title);
+
+        Ok(Some(out))
+    }
 }
 
 fn recipe_amount<'a>(
@@ -414,6 +536,7 @@ impl Wikibox {
     pub(crate) fn run(
         &self,
         stationpedia: &crate::stationpedia::Stationpedia,
+        enums: &crate::enums::Enums,
         config: &toml_edit::DocumentMut,
         verbose: bool,
     ) -> color_eyre::Result<()> {
@@ -476,6 +599,12 @@ impl Wikibox {
 
         if let Some(item) = page.item_recipe(stationpedia)? {
             println!("\n{}", item);
+        }
+
+        if let Some(data_network_properties) =
+            page.data_network_properties(stationpedia, enums, config)?
+        {
+            println!("\n{}", data_network_properties);
         }
 
         Ok(())

@@ -314,6 +314,24 @@ instructions = [
 ]
 [instructions."Deprecated"]
 instructions = ["label"]
+[logic]
+[logic.types]
+"Mode" = { description = {default = "The mode of the {device}.", "StructureSorter" = "The mode of the {device}, '''Split''' does alternate outputs, '''Filter''' decides output via [[Motherboard (Sorter)]], '''Logic''' determines output via parameter '''Output'''"} }
+"AirRelease" = { type = "Boolean" }
+"Power" = { type = "Boolean", values = ["Off", "On"] }
+"Lock" = { type = "Boolean", description = "Disable manual operation of the {device}.", values = [
+    "Unlocked",
+    "Locked",
+] }
+"Error" = { type = "Boolean", values = ["<p></p>", "Error"] }
+"On" = { description = "The current state of the {device}.", values = [
+    "On",
+    "Off",
+] }
+[logic.types."Output"]
+description = { "StructureSorter" = "In Logic mode, decides which side the next item will be sent to. (defaults to -1 after action)" }
+values = { "StructureSorter" = { "-1" = "Unset", "0" = "Straight", "1" = "Side" } }
+
 [bot]
 api_url = "https://stationeers-wiki.com/api.php"
 rest_url = "https://stationeers-wiki.com/rest.php"

@@ -1,13 +1,13 @@
+use indexmap::IndexMap;
 use serde_derive::{Deserialize, Serialize};
-use std::collections::BTreeMap;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename = "Stationpedia", deny_unknown_fields)]
 pub struct Stationpedia {
     pub pages: Vec<Page>,
-    pub reagents: BTreeMap<String, Reagent>,
+    pub reagents: IndexMap<String, Reagent>,
     #[serde(rename = "scriptCommands")]
-    pub script_commands: BTreeMap<String, Command>,
+    pub script_commands: IndexMap<String, Command>,
 }
 
 impl Stationpedia {
@@ -24,14 +24,14 @@ impl Stationpedia {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Reagent {
     #[serde(rename = "Hash")]
     pub hash: i64,
     #[serde(rename = "Unit")]
     pub unit: String,
     #[serde(rename = "Sources")]
-    pub sources: Option<BTreeMap<String, f64>>,
+    pub sources: Option<IndexMap<String, f64>>,
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
@@ -181,30 +181,30 @@ pub struct ConnectionInsert {
     pub logic_name: String,
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LogicInfo {
     #[serde(rename = "LogicSlotTypes")]
-    pub logic_slot_types: BTreeMap<String, LogicSlot>,
+    pub logic_slot_types: IndexMap<String, LogicSlot>,
     #[serde(rename = "LogicTypes")]
     pub logic_types: LogicTypes,
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LogicSlot {
     #[serde(flatten)]
-    pub slot_types: BTreeMap<String, String>,
+    pub slot_types: IndexMap<String, String>,
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LogicTypes {
     #[serde(flatten)]
-    pub types: BTreeMap<String, String>,
+    pub types: IndexMap<String, String>,
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Memory {
     #[serde(rename = "Instructions")]
-    pub instructions: Option<BTreeMap<String, Instruction>>,
+    pub instructions: Option<IndexMap<String, Instruction>>,
     #[serde(rename = "MemoryAccess")]
     pub memory_access: String,
     #[serde(rename = "MemorySize")]
@@ -234,7 +234,7 @@ pub struct Item {
     #[serde(rename = "MaxQuantity")]
     pub max_quantity: Option<f64>,
     #[serde(rename = "Reagents")]
-    pub reagents: Option<indexmap::IndexMap<String, f64>>,
+    pub reagents: Option<IndexMap<String, f64>>,
     #[serde(rename = "SlotClass")]
     pub slot_class: String,
     #[serde(rename = "SortingClass")]
@@ -276,7 +276,7 @@ pub struct Recipe {
     #[serde(rename = "CountTypes")]
     pub count_types: i64,
     #[serde(flatten)]
-    pub reagents: indexmap::IndexMap<String, f64>,
+    pub reagents: IndexMap<String, f64>,
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -299,7 +299,7 @@ pub struct RecipePressure {
     pub is_valid: bool,
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct RecipeGasMix {
     #[serde(rename = "Rule")]
     pub rule: i64,
@@ -308,7 +308,7 @@ pub struct RecipeGasMix {
     #[serde(rename = "IsAnyToRemove")]
     pub is_any_to_remove: bool,
     #[serde(flatten)]
-    pub reagents: BTreeMap<String, f64>,
+    pub reagents: IndexMap<String, f64>,
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
