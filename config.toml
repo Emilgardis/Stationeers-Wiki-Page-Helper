@@ -316,21 +316,90 @@ instructions = [
 instructions = ["label"]
 [logic]
 [logic.types]
-"Mode" = { description = {default = "The mode of the {device}.", "StructureSorter" = "The mode of the {device}, '''Split''' does alternate outputs, '''Filter''' decides output via [[Motherboard (Sorter)]], '''Logic''' determines output via parameter '''Output'''"} }
-"AirRelease" = { type = "Boolean" }
-"Power" = { type = "Boolean", values = ["Off", "On"] }
-"Lock" = { type = "Boolean", description = "Disable manual operation of the {device}.", values = [
-    "Unlocked",
-    "Locked",
-] }
-"Error" = { type = "Boolean", values = ["<p></p>", "Error"] }
-"On" = { description = "The current state of the {device}.", values = [
-    "On",
-    "Off",
-] }
-[logic.types."Output"]
-description = { "StructureSorter" = "In Logic mode, decides which side the next item will be sent to. (defaults to -1 after action)" }
-values = { "StructureSorter" = { "-1" = "Unset", "0" = "Straight", "1" = "Side" } }
+"Combustion".type = "Boolean"
+"CombustionInput".type = "Boolean"
+"CombustionInput2".type = "Boolean"
+"CombustionOutput".type = "Boolean"
+"CombustionOutput2".type = "Boolean"
+"OperationalTemperatureEfficiency".type = "Float"
+"TemperatureDifferentialEfficiency".type = "Float"
+"TemperatureInput".type = "Float"
+"TemperatureInput2".type = "Float"
+"TemperatureOutput".type = "Float"
+"TemperatureOutput2".type = "Float"
+"TotalMoles".type = "Float"
+"TotalMolesInput".type = "Float"
+"TotalMolesOutput".type = "Float"
+"AirRelease".type = "Boolean"
+"Power".type = "Boolean"
+"Power".values = ["Unpowered", "Powered"]
+"Lock".type = "Boolean"
+"Lock".description = "Disable manual operation of the {device}."
+"Lock".values = ["Unlocked", "Locked"]
+"Error".type = "Boolean"
+"Error".values = ["<p></p>", "Error"]
+"On".description = "The current state of the {device}."
+"On".values = ["Off", "On"]
+"On".type = "Boolean"
+"SettingOutput".description = "The output setting for the {device}"
+"SettingInput".description = "The input setting for the {device}"
+"ClearMemory".type = "Integer"
+"ClearMemory".description = "When set to 1, clears the counter memory (e.g. ExportCount). Will set itself back to 0 when actioned"
+"Setting".description = "A variable setting that can be read or written."
+"Maximum".type = "Float"
+"Mode".description = "The mode of the {device}."
+
+[logic.device."StructureActiveVent"]
+"PressureExternal".description = """
+"Outward" mode: Maximum pressure of the surrounding atmosphere. The default value is 101.325 (kPa)
+"Inward" mode": Minimum pressure of the surrounding atmosphere. The default value is 0 (kPa)
+"""
+"PressureInternal".description = """
+"Outward" mode: Minimum pipe network pressure. The default value is 0 (kPa).
+"Inward" mode: Maximum pipe network pressure. The default value is 50662.5 (kPa).
+"""
+[logic.device."StructureAirConditioner"]
+"Open" = { description = "Returns whether the Air Conditioner's IC Slot cover is open or closed.", values = { "0" = "Closed", "1" = "Open" } }
+"Maximum" = { description = "Maximum temperature in kelvin (K)" }
+"Setting" = { description = "Target temperature setpoint in kelvin (K)." }
+replace = [
+    { regex = "device's [iI]nput [nN]etwork", replace = "{device}'s input" },
+    { regex = "device's [iI]nput [aA]tmosphere", replace = "{device}'s input" },
+    { regex = "device's [oO]utput [nN]etwork", replace = "{device}'s output" },
+    { regex = "device's [oO]utput [aA]tmosphere", replace = "{device}'s output" },
+    { regex = "device's [oO]utput2 [nN]etwork", replace = "{device}'s waste output" },
+    { regex = "device's [oO]utput2 [aA]tmosphere", replace = "{device}'s waste output" },
+]
+[logic.device."StructureSorter"]
+"Mode" = { description = "The mode of the {device}, '''Split''' does alternate outputs, '''Filter''' decides output via [[Motherboard (Sorter)]], '''Logic''' determines output via parameter '''Output'''" }
+"Output" = { values = { "-1" = "Unset", "0" = "Straight", "1" = "Side" }, description = "Decides which side the next item will be sent to.\nIn '''Logic''' mode, defaults to -1 after action. In '''Split''' mode, alternates between 0 and 1 after action. Does nothing in '''Filter''' mode." }
+[logic.device."StructureAdvancedFurnace"]
+# From `UpdateEachFrame` on `FurnaceBase.cs`
+"Mode" = { values = [
+    "Invalid",
+    "Valid",
+], description = "The {device}'s smelting result." }
+"Activate" = { description = "Activates the Advanced Furnace when set to 1. Deactivates when set to 0." }
+"Maximum".type = "Float"
+[[logic.replace]]
+regex = "device's device's"
+replace = "{device}'s"
+p = -1
+[[logic.replace]]
+regex = "device's \\{device\\}'s"
+replace = "{device}'s"
+p = 1
+[[logic.replace]]
+regex = "^The assess atmosphere"
+replace = "Assess if the atmosphere"
+[[logic.replace]]
+regex = "the device"
+replace = "the {device}"
+p = 100
+[[logic.replace]]
+regex = "Atmopshere"
+replace = "Atmosphere"
+prio = -1
 
 [bot]
 api_url = "https://stationeers-wiki.com/api.php"

@@ -292,11 +292,7 @@ impl Page {
             return Ok(None);
         }
         let mut out = String::new();
-        out.push_str(&textwrap::dedent(
-            "
-            == Stationpedia Description ==
-            ",
-        ));
+        out.push_str(&textwrap::dedent("<blockquote><q>"));
         // description looks like html, example: The advanced <link=Xigo><color=#0080FFFF>Xigo</color></link> Padi 2 tablet is an improved version of the basic <link=ThingItemTablet><color=green>Handheld Tablet</color></link>, boasting two <link=CartridgePage><color=#0080FFFF>cartridge</color></link> slots. The Padi 2 accepts <link=ThingCartridgeAtmosAnalyser><color=green>Atmos Analyzer</color></link>, <link=ThingCartridgeTracker><color=green>Tracker</color></link>, <link=ThingCartridgeMedicalAnalyser><color=green>Medical Analyzer</color></link>, <link=ThingCartridgeOreScanner><color=green>Ore Scanner</color></link>, <link=ThingCartridgeElectronicReader><color=green>eReader</color></link>, and various other cartridges.\n\t  \n\t  With a <link=ThingItemIntegratedCircuit10><color=green>Integrated Circuit (IC10)</color></link> in the <link=SlotProgrammableChip><color=orange>Programmable Chip</color></link>, you can access variable slots on the carrying human using the device numbers (d0, d1, etc...), so long as the item can be access via logic, such as the <link=ThingItemHardSuit><color=green>Hardsuit</color></link>.Connects to <pos=300><link=ThingStructureLogicTransmitter><color=green>Logic Transmitter</color></link>
         // we need to replace <link>s with proper wiki links.
         // For example:
@@ -305,46 +301,8 @@ impl Page {
         // etc
 
         // Implementation for all descriptions
-        let re = regex::Regex::new(r"<color=.*?>|</color>").unwrap();
-        let description = re.replace_all(&self.description, "").to_string();
-
-        // then we walk through each link and replace it with the proper wiki link, we do this by splitting the string on <link=
-        // then we split on > to get the link and the text and finally insert the proper wiki link and rest of text
-        let split = description.split("<link=");
-        for link in split {
-            tracing::debug!("split: {}", link);
-            let Some((thing, rest)) = link.split_once('>') else {
-                out.push_str(link);
-                continue;
-            };
-            let (display, rest) = rest.split_once("</link>").unwrap();
-            if let Some(link) = config
-                .get("stationpedia")
-                .and_then(|c| c.get("links"))
-                .and_then(|c| c.get(thing))
-                .and_then(|c| c.as_str())
-            {
-                if link == display {
-                    out.push_str(&format!("[[{}]]", link));
-                } else {
-                    out.push_str(&format!("[[{}|{}]]", link, display));
-                }
-            } else if let Some(item) = pedia.lookup_key(thing) {
-                if item.title == display {
-                    out.push_str(&format!("[[{}]]", item.title));
-                } else {
-                    out.push_str(&format!("[[{}|{}]]", item.title, display));
-                }
-            } else if let Some(slot) = thing.strip_prefix("Slot") {
-                out.push_str(&format!("{} slot", slot));
-            } else {
-                out.push_str(&format!("[[{}|{}]]", thing, display));
-            }
-            out.push_str(rest)
-        }
-        // now, replace all leftover tags
-        let re = regex::Regex::new(r"<[^>]+>").unwrap();
-        let out = re.replace_all(&out, "").to_string();
+        translate_to_wiki(&mut out, &self.description, pedia, config)?;
+        out.push_str("</q><br>\n'''- Stationpedia'''</blockquote>");
         Ok(Some(out))
     }
 
@@ -364,49 +322,135 @@ impl Page {
             return Ok(None);
         };
 
+        let mut replacements_global: Vec<(regex::Regex, &str, i64)> = vec![];
+        if let Some(replace) = config
+            .get("logic")
+            .and_then(|i| i.get("replace"))
+            .and_then(|r| r.as_array_of_tables())
+            .map(|a| {
+                a.iter().filter_map(|a| {
+                    Some((
+                        a.get("regex")?.as_str()?,
+                        a.get("replace")?.as_str()?,
+                        a.get("prio").and_then(|p| p.as_integer()),
+                    ))
+                })
+            })
+        {
+            replacements_global
+                .extend(replace.map(|(r, rpl, p)| {
+                    (regex::Regex::new(r).unwrap(), rpl, p.unwrap_or_default())
+                }));
+        }
+
         out.push_str("{{Data Network Header}}\n");
 
         if !logic_info.logic_types.types.is_empty() {
             out.push_str("{{Data Parameters|");
+            let mut replacements = vec![];
+
+            if let Some(replace) = config
+                .get("logic")
+                .and_then(|e| e.get("device"))
+                .and_then(|t| t.get(&self.prefab_name))
+                .and_then(|i| i.get("replace"))
+                .and_then(|r| r.as_array())
+                .map(|a| {
+                    a.iter().filter_map(|a| {
+                        let a = a.as_inline_table()?;
+                        Some((
+                            a.get("regex")?.as_str()?,
+                            a.get("replace")?.as_str()?,
+                            a.get("prio").and_then(|p| p.as_integer()),
+                        ))
+                    })
+                })
+            {
+                replacements.extend(replace.map(|(r, rpl, p)| {
+                    dbg!((&r, &rpl));
+                    std::borrow::Cow::Owned((
+                        regex::Regex::new(r).unwrap(),
+                        rpl,
+                        p.unwrap_or_default(),
+                    ))
+                }));
+            }
+            replacements.extend(
+                replacements_global
+                    .iter()
+                    .map(std::borrow::Cow::Borrowed)
+                    .collect::<Vec<_>>(),
+            );
+            replacements.sort_by_key(|p| p.2);
             for (logic_type, rw) in logic_info.logic_types.types.iter() {
+                if enums
+                    .script_enums
+                    .get("LogicType")
+                    .and_then(|lt| lt.values.get(logic_type))
+                    .is_some_and(|lt| lt.deprecated)
+                {
+                    continue;
+                }
                 // {{Data Parameters/row|Mode|0|a}}
                 write!(out, "\n{{{{Data Parameters/row|{logic_type}")?;
-                let conf = config
+                let conf_global = config
                     .get("logic")
                     .and_then(|e| e.get("types"))
                     .and_then(|t| t.get(logic_type));
+                let conf_device = config
+                    .get("logic")
+                    .and_then(|e| e.get("device"))
+                    .and_then(|t| t.get(&self.prefab_name))
+                    .and_then(|t| t.get(logic_type));
+
                 let ty: &str;
-                if let Some(typ) = conf.and_then(|i| i.get("type")) {
+                if let Some(typ) = conf_global.and_then(|i| i.get("type")) {
                     ty = typ.as_str().unwrap();
+                } else if logic_type.contains("Ratio") || logic_type.contains("Pressure") {
+                    ty = "Float";
                 } else {
                     ty = "Integer";
                 }
-                write!(out, "|{ty}");
+                write!(out, "|{ty}")?;
                 if !rw.contains("Read") {
                     out.push_str("|r=0");
                 }
                 if !rw.contains("Write") {
                     out.push_str("|w=0");
                 }
+                let wikify = |s: &str| -> color_eyre::Result<String> {
+                    let s = s.trim();
+                    let mut out = String::new();
+                    translate_to_wiki(&mut out, s, pedia, config)?;
+                    if s.contains('\n') {
+                        Ok(format!("<div>{}</div>", out.replace('\n', "<br>\n")))
+                    } else {
+                        Ok(out.to_string())
+                    }
+                };
                 let enum_desc = |out: &mut String| -> color_eyre::Result<()> {
                     if let Some(lt) = enums
                         .script_enums
                         .get("LogicType")
                         .and_then(|lt| lt.values.get(logic_type))
                     {
-                        write!(out, "|{}", lt.description)?;
+                        let mut desc = lt.description.clone();
+                        for replace in &replacements {
+                            desc = replace.0.replace_all(&desc, replace.1).to_string();
+                        }
+                        {}
+                        write!(out, "|{}", wikify(&desc)?)?;
                     }
                     Ok(())
                 };
-                tracing::info!(?conf);
-                if let Some(desc) = conf.and_then(|i| i.get("description")) {
+                if let Some(desc) = conf_device.and_then(|i| i.get("description")) {
+                    write!(out, "|{}", wikify(desc.as_str().unwrap())?)?;
+                } else if let Some(desc) = conf_global.and_then(|i| i.get("description")) {
                     if let Some(desc) = desc.as_str() {
-                        write!(out, "|{}", desc)?;
+                        write!(out, "|{}", wikify(desc)?)?;
                     } else if let Some(table) = desc.as_table_like() {
-                        if let Some(desc) = table.get(&self.prefab_name) {
-                            write!(out, "|{}", desc.as_str().unwrap())?;
-                        } else if let Some(desc) = table.get("default") {
-                            write!(out, "|{}", desc.as_str().unwrap())?;
+                        if let Some(desc) = table.get("default") {
+                            write!(out, "|{}", wikify(desc.as_str().unwrap())?)?;
                         } else {
                             enum_desc(&mut out)?;
                         }
@@ -416,43 +460,47 @@ impl Page {
                 }
                 'values: {
                     'conf: {
-                        if let Some(values) = conf.and_then(|i| i.get("values")) {
-                            let values = if let Some(table) = values.as_table_like() {
-                                if let Some(entry) = table.get(&self.prefab_name) {
-                                    entry
-                                } else if let Some(entry) = table.get("default") {
-                                    entry
-                                } else {
-                                    break 'conf;
+                        let mut values = None;
+                        if let Some(values_) = conf_device.and_then(|i| i.get("values")) {
+                            values = Some(values_);
+                        } else if let Some(values_) = conf_global.and_then(|i| i.get("values")) {
+                            if let Some(table) = values_.as_table_like() {
+                                if let Some(entry) = table.get("default") {
+                                    values = Some(entry);
                                 }
                             } else {
-                                values
+                                values = Some(values_);
                             };
-                            if let Some(arr) = values.as_array() {
-                                write!(out, "|multiple={}", arr.len());
-                                for (e, v) in arr.iter().map(|v| v.as_str().unwrap()).enumerate() {
-                                    write!(out, "|{e}|{v}")?;
-                                }
-                                break 'values;
-                            } else if let Some(str) = values.as_str() {
-                                write!(out, "|{}", str)?;
-                                break 'values;
-                            } else if let Some(table) = values.as_table_like() {
-                                write!(out, "|multiple={}", table.len());
-                                for (k, v) in table.iter() {
-                                    write!(out, "|{}|{}", k, v.as_str().unwrap())?;
-                                }
-                                break 'values;
+                        }
+                        let Some(values) = values else {
+                            break 'conf;
+                        };
+                        if let Some(arr) = values.as_array() {
+                            write!(out, "|multiple={}", arr.len())?;
+                            for (e, v) in arr.iter().map(|v| v.as_str().unwrap()).enumerate() {
+                                write!(out, "|{e}|{v}")?;
                             }
+                            break 'values;
+                        } else if let Some(str) = values.as_str() {
+                            write!(out, "|{}", str)?;
+                            break 'values;
+                        } else if let Some(table) = values.as_table_like() {
+                            write!(out, "|multiple={}", table.len())?;
+                            for (k, v) in table.iter() {
+                                write!(out, "|{}|{}", k, v.as_str().unwrap())?;
+                            }
+                            break 'values;
                         }
                     }
                     if logic_type == "Mode" && !mode_insert.is_empty() {
-                        write!(out, "|multiple={}", mode_insert.len());
+                        write!(out, "|multiple={}", mode_insert.len())?;
                         for (e, v) in mode_insert.iter().enumerate() {
                             write!(out, "|{e}|{}", v.logic_name)?;
                         }
                     } else if ty == "Boolean" {
                         write!(out, "|0 or 1")?;
+                    } else if logic_type.contains("Ratio") {
+                        write!(out, "|0.0 to 1.0")?;
                     }
                 }
 
@@ -466,6 +514,62 @@ impl Page {
 
         Ok(Some(out))
     }
+}
+
+fn translate_to_wiki(
+    out: &mut String,
+    string: &str,
+    pedia: &Stationpedia,
+    config: &toml_edit::DocumentMut,
+) -> color_eyre::Result<()> {
+    let re = regex::Regex::new(r"<color=.*?>|</color>").unwrap();
+    let string = re.replace_all(string, "").to_string();
+    let mut s = String::new();
+    // then we walk through each link and replace it with the proper wiki link, we do this by splitting the string on <link=
+    // then we split on > to get the link and the text and finally insert the proper wiki link and rest of text
+    if !string.contains("<link=") {
+        s = string;
+    } else {
+        let split = string.split("<link=");
+        for link in split {
+            tracing::debug!("split: {}", link);
+            let Some((thing, rest)) = link.split_once('>') else {
+                s.push_str(link);
+                continue;
+            };
+            let Some((display, rest)) = rest.split_once("</link>") else {
+                tracing::warn!("got wierd link: {}", link);
+                continue;
+            };
+            if let Some(link) = config
+                .get("stationpedia")
+                .and_then(|c| c.get("links"))
+                .and_then(|c| c.get(thing))
+                .and_then(|c| c.as_str())
+            {
+                if link == display {
+                    s.push_str(&format!("[[{}]]", link));
+                } else {
+                    s.push_str(&format!("[[{}|{}]]", link, display));
+                }
+            } else if let Some(item) = pedia.lookup_key(thing) {
+                if item.title == display {
+                    s.push_str(&format!("[[{}]]", item.title));
+                } else {
+                    s.push_str(&format!("[[{}|{}]]", item.title, display));
+                }
+            } else if let Some(slot) = thing.strip_prefix("Slot") {
+                s.push_str(&format!("{} slot", slot));
+            } else {
+                s.push_str(&format!("[[{}|{}]]", thing, display));
+            }
+            s.push_str(rest)
+        }
+    }
+    // now, replace all leftover tags
+    let re = regex::Regex::new(r"<[^>]+>").unwrap();
+    out.push_str(&re.replace_all(&s, ""));
+    Ok(())
 }
 
 fn recipe_amount<'a>(
