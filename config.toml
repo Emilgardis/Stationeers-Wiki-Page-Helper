@@ -400,6 +400,24 @@ p = 100
 regex = "Atmopshere"
 replace = "Atmosphere"
 prio = -1
+[[logic.replace]]
+regex = "of pollutant"
+replace = "of [[Pollutant]]"
+[[logic.replace]]
+regex = "of volatiles"
+replace = "of [[Volatiles]]"
+[[logic.replace]]
+regex = "of nitrogen"
+replace = "of [[Nitrogen]]"
+[[logic.replace]]
+regex = "of oxygen"
+replace = "of [[Oxygen]]"
+[[logic.replace]]
+regex = "of carbon dioxide"
+replace = "of [[Carbon Dioxide]]"
+[[logic.replace]]
+regex = "of water"
+replace = "of [[Water]]"
 
 [bot]
 api_url = "https://stationeers-wiki.com/api.php"
@@ -408,3 +426,14 @@ rest_url = "https://stationeers-wiki.com/rest.php"
 [stationpedia.links]
 Xigo = "Xigo (Faction)"
 CartridgePage = "Cartridge"
+GasNitrousOxide = "Nitrous Oxide"
+GasLiquidNitrousOxide = "Nitrous Oxide#Liquid"
+GasLiquidPollutant = "Pollutant#Liquid"
+GasCarbonDioxide = "Carbon Dioxide"
+GasLiquidCarbonDioxide = "Carbon Dioxide#Liquid"
+GasSteam = "Steam"
+GasLiquidVolatiles = "Volatiles#Liquid"
+GasLiquidOxygen = "Oxygen#Liquid"
+GasLiquidNitrogen = "Nitrogen#Liquid"
+GasHydrogen = "Hydrogen"
+GasLiquidHydrogen = "Hydrogen#Liquid"
