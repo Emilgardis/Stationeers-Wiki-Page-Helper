@@ -348,6 +348,8 @@ instructions = ["label"]
 "Setting".description = "A variable setting that can be read or written."
 "Maximum".type = "Float"
 "Mode".description = "The mode of the {device}."
+"RatioHydrogen".description = "DEPRECATED"
+"RatioLiquidHydrogen".description = "DEPRECATED"
 
 [logic.device."StructureActiveVent"]
 "PressureExternal".description = """
@@ -381,6 +383,17 @@ replace = [
 ], description = "The {device}'s smelting result." }
 "Activate" = { description = "Activates the Advanced Furnace when set to 1. Deactivates when set to 0." }
 "Maximum".type = "Float"
+[logic.device."Robot"]
+Mode.values = [
+    "RobotMode.None",
+    "RobotMode.Follow",
+    "RobotMode.MoveToTarget",
+    "RobotMode.Roam",
+    "RobotMode.Unload",
+    "RobotMode.PathToTarget",
+    "RobotMode.StorageFull",
+]
+
 [[logic.replace]]
 regex = "device's device's"
 replace = "{device}'s"
@@ -425,6 +438,10 @@ rest_url = "https://stationeers-wiki.com/rest.php"
 [stationpedia]
 [stationpedia.links]
 Xigo = "Xigo (Faction)"
+Norsec = "Norsec (Faction)"
+Recurso = "Recurso Espaciais (Faction)"
+LogicUnitPage = "Category:Circuits"
+ImportExportPage = "Category:Import/Export"
 CartridgePage = "Cartridge"
 GasNitrousOxide = "Nitrous Oxide"
 GasLiquidNitrousOxide = "Nitrous Oxide#Liquid"
@@ -437,3 +454,4 @@ GasLiquidOxygen = "Oxygen#Liquid"
 GasLiquidNitrogen = "Nitrogen#Liquid"
 GasHydrogen = "Hydrogen"
 GasLiquidHydrogen = "Hydrogen#Liquid"
+ThingMotherboardProgrammableChip = "Motherboard (IC_Editor)"
