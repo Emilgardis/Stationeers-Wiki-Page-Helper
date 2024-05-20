@@ -367,7 +367,6 @@ impl Page {
                 })
             {
                 replacements.extend(replace.map(|(r, rpl, p)| {
-                    dbg!((&r, &rpl));
                     std::borrow::Cow::Owned((
                         regex::Regex::new(r).unwrap(),
                         rpl,
