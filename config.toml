@@ -361,7 +361,7 @@ instructions = ["label"]
 [logic.device."StructureAirConditioner"]
 "Open" = { description = "Returns whether the Air Conditioner's IC Slot cover is open or closed.", values = { "0" = "Closed", "1" = "Open" } }
 "Maximum" = { description = "Maximum temperature in kelvin (K)" }
-"Setting" = { description = "Target temperature setpoint in kelvin (K)." }
+"Setting" = { description = "Target temperature setpoint in kelvin (K).", type = "Float" }
 replace = [
     { regex = "device's [iI]nput [nN]etwork", replace = "{device}'s input" },
     { regex = "device's [iI]nput [aA]tmosphere", replace = "{device}'s input" },
