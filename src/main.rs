@@ -16,9 +16,9 @@ struct Cli {
     subcommand: commands::Sub,
     #[arg(short)]
     verbose: bool,
-    #[arg(global = true, long, default_value = get_cargo_workspace().join("Stationpedia.json").into_os_string())]
+    #[arg(global = true, long, default_value = get_cargo_workspace().join("third_party").join("Stationpedia.json").into_os_string())]
     stationpedia: PathBuf,
-    #[arg(global = true, long, default_value = get_cargo_workspace().join("Enums.json").into_os_string())]
+    #[arg(global = true, long, default_value = get_cargo_workspace().join("third_party").join("Enums.json").into_os_string())]
     enums: PathBuf,
     #[arg(global = true, long, default_value = get_cargo_workspace().join("config.toml").into_os_string())]
     config: PathBuf,
