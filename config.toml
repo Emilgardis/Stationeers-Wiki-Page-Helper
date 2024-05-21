@@ -119,6 +119,7 @@ instructions = [
     """ },
     "sd",
     "ss",
+    "rmap",
 ]
 [instructions."Slot/Logic"."Batched"]
 instructions = [{ op = "lb", example = """
