@@ -46,6 +46,7 @@ fn main() -> color_eyre::Result<()> {
     Ok(())
 }
 
+#[track_caller]
 pub fn parse_json<'a, T: serde::Deserialize<'a>>(
     jd: impl serde::Deserializer<'a>,
 ) -> Result<T, color_eyre::Report> {
@@ -54,11 +55,14 @@ pub fn parse_json<'a, T: serde::Deserialize<'a>>(
     let mut fun = |path: serde_ignored::Path| {
         tracing::warn!(key=%path,"Found ignored key");
     };
+    let location = std::panic::Location::caller();
     serde_ignored::deserialize(pathd, &mut fun).map_err(|e| {
-        eyre::eyre!(
+        let mut e = eyre::eyre!(
             "path: {track} | error = {e}",
             track = track.path().to_string(),
-        )
+        );
+        e.handler_mut().track_caller(location);
+        e
     })
 }
 

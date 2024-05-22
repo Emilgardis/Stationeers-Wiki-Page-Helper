@@ -85,6 +85,46 @@ pub struct Page {
     pub max_pressure: Option<String>,
     #[serde(rename = "GrowthTime")]
     pub growth_time: Option<String>,
+    #[serde(rename = "CircuitHolder", default)]
+    pub circuit_holder: bool,
+    #[serde(rename = "Thermal")]
+    pub thermal: Option<Thermal>,
+    #[serde(rename = "ResourceConsumer")]
+    pub resource_consumer: Option<ResourceConsumer>,
+    #[serde(rename = "Chargeable")]
+    pub chargeable: Option<Chargeable>,
+    #[serde(rename = "InternalAtmosphere")]
+    pub internal_atmosphere: Option<InternalAtmosphere>,
+    #[serde(rename = "SourceCode", default)]
+    pub source_code: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct InternalAtmosphere {
+    #[serde(rename = "Volume")]
+    pub volume: f64,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Chargeable {
+    #[serde(rename = "PowerMaximum")]
+    pub power_maximum: f64,
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Ord, Eq, Serialize, Deserialize)]
+pub struct ResourceConsumer {
+    #[serde(rename = "ConsumedResources")]
+    pub consumed_resources: Vec<String>,
+    #[serde(rename = "ProcessedReagents")]
+    pub processed_reagents: Vec<i64>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Thermal {
+    #[serde(rename = "Radiation")]
+    pub radiation: f64,
+    #[serde(rename = "Convection")]
+    pub convection: f64,
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
@@ -243,6 +283,18 @@ pub struct Item {
     pub recipes: Vec<Recipe>,
     #[serde(rename = "Food")]
     pub food: Option<Food>,
+    #[serde(rename = "Wearable", default)]
+    pub wearable: bool,
+    #[serde(rename = "Suit")]
+    pub suit: Option<Suit>,
+}
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+
+pub struct Suit {
+    #[serde(rename = "HygineReductionMultiplier")]
+    pub hygine_reduction_multiplier: f64,
+    #[serde(rename = "WasteMaxPressure")]
+    pub pressure: f64,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -311,7 +363,7 @@ pub struct RecipeGasMix {
     pub reagents: IndexMap<String, f64>,
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Device {
     #[serde(rename = "ConnectionList")]
     pub connection_list: Vec<Vec<String>>,
@@ -333,4 +385,16 @@ pub struct Device {
     pub has_open_state: bool,
     #[serde(rename = "HasReagents")]
     pub has_reagents: bool,
+    #[serde(rename = "Fabricator")]
+    pub fabricator: Option<Fabricator>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Fabricator {
+    #[serde(rename = "Tier")]
+    pub tier: i64,
+    #[serde(rename = "TierName")]
+    pub tier_name: MachineTier,
+    #[serde(rename = "Recipes")]
+    pub recipes: IndexMap<String, Recipe>,
 }
