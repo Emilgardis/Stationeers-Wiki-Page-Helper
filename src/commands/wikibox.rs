@@ -575,7 +575,7 @@ fn translate_to_wiki(
                 s.push_str(&format!("{slot} slot"));
             } else {
                 tracing::warn!("no link found for {thing} - {}", link_display);
-                s.push_str(&link_display);
+                s.push_str(link_display);
             }
             s.push_str(rest)
         }
