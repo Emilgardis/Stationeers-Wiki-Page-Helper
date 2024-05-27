@@ -1,12 +1,12 @@
 [instructions]
 [instructions."Utility"]
 instructions = [{ op = "alias", example = """
-    {{MIPSCode|
+    {{ICCode|
     alias dAutoHydro1 d0
     alias vTemperature r0
     }}
     """ }, { op = "define", example = """
-    {{MIPSCode|
+    {{ICCode|
     define ultimateAnswer 42
     move r0 ultimateAnswer # Store 42 in register 0
     }}
@@ -14,21 +14,21 @@ instructions = [{ op = "alias", example = """
 [instructions."Mathematical"]
 instructions = [
     { op = "abs", example = """
-    {{MIPSCode|
+    {{ICCode|
     define negativeNumber -10
     abs r0 negativeNumber # Compute the absolute value of -10 and store it in register 0
     }}
     """ },
     { op = "add", example = """
-    {{MIPSCode|add r0 r0 1 # increment r0 by one}}
-    {{MIPSCode|
+    {{ICCode|add r0 r0 1 # increment r0 by one}}
+    {{ICCode|
     define num1 10
     define num2 20
     add r0 num1 num2 # Add 10 and 20 and store the result in register 0
     }}
     """ },
     { op = "ceil", example = """
-    {{MIPSCode|
+    {{ICCode|
     define floatNumber 10.3
     ceil r0 floatNumber # Compute the ceiling of 10.3 and store it in register 0
     }}
@@ -40,7 +40,7 @@ instructions = [
     "max",
     "min",
     { op = "mod", example = """
-    {{MIPSCode|
+    {{ICCode|
     mod r0 10 20
     # Expected: r0 = 10
 
@@ -55,7 +55,7 @@ instructions = [
     }}
     """ },
     { op = "move", example = """
-    {{MIPSCode|move r0 42 # Store 42 in register 0}}
+    {{ICCode|move r0 42 # Store 42 in register 0}}
     """ },
     "mul",
     "rand",
@@ -91,11 +91,11 @@ instructions = [
 instructions = [
     { op = "l", example = """
     Read from the device on d0 into register 0
-    {{MIPSCode|l r0 d0 Setting}}
+    {{ICCode|l r0 d0 Setting}}
     Read the pressure from a sensor
-    {{MIPSCode|l r1 d5 Pressure}}
+    {{ICCode|l r1 d5 Pressure}}
     This also works with aliases. For example:
-    {{MIPSCode|
+    {{ICCode|
     alias Sensor d0
     l r0 Sensor Temperature
     }}
@@ -104,16 +104,16 @@ instructions = [
     "lr",
     { op = "ls", example = """
     Read from the second slot of device on d0, stores 1 in r0 if it's occupied, 0 otherwise.
-    {{MIPSCode|ls r0 d0 2 Occupied}}
+    {{ICCode|ls r0 d0 2 Occupied}}
     And here is the code to read the charge of an AIMeE:
-    {{MIPSCode|
+    {{ICCode|
     alias robot d0
     alias charge r10
     ls charge robot 0 Charge
     }}
     """ },
     { op = "s", example = """
-    {{MIPSCode|
+    {{ICCode|
     s d0 Setting r0
     }}
     """ },
@@ -123,9 +123,9 @@ instructions = [
 ]
 [instructions."Slot/Logic"."Batched"]
 instructions = [{ op = "lb", example = """
-    {{MIPSCode|lb r0 HASH("StructureWallLight") On Sum}}
+    {{ICCode|lb r0 HASH("StructureWallLight") On Sum}}
     """ }, "lbn", "lbns", "lbs", { op = "sb", example = """
-    {{MIPSCode|sb HASH("StructureWallLight") On 1}}
+    {{ICCode|sb HASH("StructureWallLight") On 1}}
     """ }, "sbn", "sbs"]
 [instructions."Bitwise"]
 instructions = [
@@ -142,7 +142,7 @@ instructions = [
 [instructions."Comparison"]
 instructions = [
     { op = "select", note = "This operation can be used as a simple ternary condition", example = """
-    {{MIPSCode|
+    {{ICCode|
     select r1 r0 10 100
     }}
     """ },
@@ -172,8 +172,8 @@ instructions = [
 ]
 [instructions."Branching"]
 instructions = [{ op = "j", example = """
-    {{MIPSCode|j 0 # jump line 0}}
-    {{MIPSCode|
+    {{ICCode|j 0 # jump line 0}}
+    {{ICCode|
     j label # jump to a label
 
     label:
@@ -182,7 +182,7 @@ instructions = [{ op = "j", example = """
     """ }, { op = "jal", example = """
     jal provides a way to do function calls in IC10 mips
 
-    {{MIPSCode|
+    {{ICCode|
     move r0 1000
     move r1 0
     start:
@@ -198,16 +198,23 @@ instructions = [{ op = "j", example = """
     }}
     """ }, "jr"]
 [instructions."Branching"."Device Pin"]
-instructions = ["bdns", "bdnsal", "bdse", { op = "bdseal", example = """
-    {{MIPSCode|
+instructions = [
+    { op = "bdns", syntax = "bdns d? a(r?{{!}}num)" },
+    { op = "bdnsal", syntax = "bdnsal d? a(r?{{!}}num)" },
+    { op = "bdse", syntax = "bdse d? a(r?{{!}}num)" },
+    { op = "bdseal", syntax = "bdseal d? a(r?{{!}}num)", example = """
+    {{ICCode|
     #Store line number and jump to line 32 if d0 is assigned.
     bdseal d0 32
     }}
-    {{MIPSCode|
+    {{ICCode|
     #Store line in ra and jump to label HarvestCrop if device d0 is assigned.
     bdseal d0 HarvestCrop
     }}
-    """ }, "brdns", "brdse"]
+    """ },
+    { op = "brdns", syntax = "brdns d? a(r?{{!}}num)" },
+    { op = "brdse", syntax = "brdse d? a(r?{{!}}num)" },
+]
 [instructions."Branching"."Comparison"]
 instructions = [
     "bap",
@@ -225,7 +232,7 @@ instructions = [
     { op = "bgt", example = """
     An example of a '''Schmitt''' trigger, turning on a device if the temperature is too low, and turning it off if it's too high and finally
     doing nothing if the temperature is within the desired range.
-    {{MIPSCode|
+    {{ICCode|
     alias sensor d0
     alias device d1
 
@@ -259,7 +266,7 @@ instructions = [
     { op = "blt", example = """
     An example of a '''Schmitt''' trigger, turning on a device if the temperature is too low, and turning it off if it's too high and finally
     doing nothing if the temperature is within the desired range.
-    {{MIPSCode|
+    {{ICCode|
     alias sensor d0
     alias device d1
 
@@ -351,7 +358,7 @@ instructions = ["label"]
 "Mode".description = "The mode of the {device}."
 "RatioHydrogen".description = "DEPRECATED"
 "RatioLiquidHydrogen".description = "DEPRECATED"
-
+"Open".values = ["Closed", "Open"]
 [logic.device."StructureActiveVent"]
 "PressureExternal".description = """
 "Outward" mode: Maximum pressure of the surrounding atmosphere. The default value is 101.325 (kPa)
@@ -394,6 +401,21 @@ Mode.values = [
     "RobotMode.PathToTarget",
     "RobotMode.StorageFull",
 ]
+[logic.device."StructureBasketHoop"]
+"Setting".description = "The amount of points scored in the basket. Currently always incremented by 2."
+"Lock".description = "Unimplemented, does nothing."
+"Lock".values = []
+
+[logic.device."StructureVolumePump"]
+"Setting".description = "Sets the flow rate in liters"
+"Setting".type = "Float"
+"Setting".values = "0.0 to 10.0"
+"Ratio".description = "Setting / Maximum"
+[logic.device."StructureTurboVolumePump"]
+"Setting".description = "Sets the flow rate in liters"
+"Setting".type = "Float"
+"Setting".values = "0.0 to 100.0"
+"Ratio".description = "Setting / Maximum"
 
 [[logic.replace]]
 regex = "device's device's"
@@ -441,10 +463,13 @@ rest_url = "https://stationeers-wiki.com/rest.php"
 Xigo = "Xigo (Faction)"
 Norsec = "Norsec (Faction)"
 Recurso = "Recurso Espaciais (Faction)"
-LogicUnitPage = "Category:Circuits"
-ImportExportPage = "Category:Import/Export"
+ExMin = "ExMin (Faction)"
+LogicUnitPage = ":Category:Circuits"
+ImportExportPage = ":Category:Import/Export"
+IngotPage = ":Category:Ingot"
 CartridgePage = "Cartridge"
 GasNitrousOxide = "Nitrous Oxide"
+ThingItemHealPill = "Pill (Medical)"
 GasLiquidNitrousOxide = "Nitrous Oxide#Liquid"
 GasLiquidPollutant = "Pollutant#Liquid"
 GasCarbonDioxide = "Carbon Dioxide"

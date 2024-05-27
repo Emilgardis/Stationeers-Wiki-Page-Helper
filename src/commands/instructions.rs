@@ -39,7 +39,7 @@ impl Instructions {
         let mut output = String::new();
         output.push_str(
             "<noinclude>
-See [[MIPS]] for the primary page for IC10 MIPS. This page lists all available instructions
+See [[IC10]] for the primary page for the IC10 instruction set. This page lists all available instructions
 </noinclude>
 
 ",
@@ -86,11 +86,16 @@ fn render(
         } else {
             real_desc
         };
-        let syntax = ins.info.example.replace('|', "{{!}}");
-        let syntax = re.replace_all(&syntax, "");
+        let syntax = 'syntax: {
+            if let Some(sy) = &ins.syntax {
+                break 'syntax std::borrow::Cow::Borrowed(sy.as_str());
+            };
+            let syntax = ins.info.example.replace('|', "{{!}}");
+            std::borrow::Cow::Owned(re.replace_all(&syntax, "").into_owned())
+        };
         write!(
             output,
-            "{{{{MIPSInstruction|instruction={command}|description={desc}|syntax={syntax}"
+            "{{{{ICInstruction|instruction={command}|description={desc}|syntax={syntax}"
         )?;
         if let Some(example) = &ins.example {
             write!(output, "\n|example=\n{example}")?;
@@ -110,6 +115,7 @@ struct ConfigInstruction {
     example: Option<String>,
     note: Option<String>,
     desc: Option<String>,
+    syntax: Option<String>,
     info: crate::stationpedia::Command,
 }
 
@@ -140,6 +146,7 @@ impl<'doc> toml_edit::visit::Visit<'doc> for InstructionCollector {
                     example: None,
                     note: None,
                     desc: None,
+                    syntax: None,
                     info: self.info.take().unwrap(),
                 });
             } else if let Some(it) = node.as_array().unwrap().iter().find_map(|i| {
@@ -162,6 +169,10 @@ impl<'doc> toml_edit::visit::Visit<'doc> for InstructionCollector {
                         .map(|s| textwrap::dedent(s).trim().to_owned()),
                     desc: it
                         .get("desc")
+                        .and_then(|e| e.as_str())
+                        .map(|s| textwrap::dedent(s).trim().to_owned()),
+                    syntax: it
+                        .get("syntax")
                         .and_then(|e| e.as_str())
                         .map(|s| textwrap::dedent(s).trim().to_owned()),
                     info: self.info.take().unwrap(),

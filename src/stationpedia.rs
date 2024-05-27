@@ -7,7 +7,7 @@ pub struct Stationpedia {
     pub pages: Vec<Page>,
     pub reagents: IndexMap<String, Reagent>,
     #[serde(rename = "scriptCommands")]
-    pub script_commands: IndexMap<String, Command>,
+    pub script_commands: std::collections::BTreeMap<String, Command>,
 }
 
 impl Stationpedia {
