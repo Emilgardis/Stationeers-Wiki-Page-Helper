@@ -172,7 +172,11 @@ impl Page {
                     ingredients.push_str(", ");
                 }
                 let (amount, ingredient) = recipe_amount(pedia, name, &recipe.creator_prefab_name);
-                write!(ingredients, "{quantity}{amount} [[{ingredient}]]")?;
+                let ingredient = ingredient
+                    .iter()
+                    .map(|ingr| format!("[[{ingr}]]"))
+                    .collect::<Vec<_>>();
+                write!(ingredients, "{quantity}{amount} {}", ingredient.join(", "))?;
             }
             if recipe.creator_prefab_name == "StructureOrganicsPrinter" {
                 continue;
@@ -261,7 +265,11 @@ impl Page {
                 }
                 let (amount, ingredient) =
                     recipe_amount(pedia, ingredient, &recipe.creator_prefab_name);
-                write!(ingredients, "{quantity}{amount} [[{ingredient}]]")?;
+                let ingredient = ingredient
+                    .iter()
+                    .map(|ingr| format!("[[{ingr}]]"))
+                    .collect::<Vec<_>>();
+                write!(ingredients, "{quantity}{amount} {}", ingredient.join(", "))?;
             }
             if recipe.creator_prefab_name == "StructureOrganicsPrinter" {
                 continue;
@@ -475,6 +483,9 @@ impl Page {
                             break 'conf;
                         };
                         if let Some(arr) = values.as_array() {
+                            if arr.is_empty() {
+                                break 'values;
+                            }
                             write!(out, "|multiple={}", arr.len())?;
                             for (e, v) in arr.iter().map(|v| v.as_str().unwrap()).enumerate() {
                                 write!(out, "|{e}|{v}")?;
@@ -484,6 +495,9 @@ impl Page {
                             write!(out, "|{}", str)?;
                             break 'values;
                         } else if let Some(table) = values.as_table_like() {
+                            if table.is_empty() {
+                                break 'values;
+                            }
                             write!(out, "|multiple={}", table.len())?;
                             for (k, v) in table.iter() {
                                 write!(out, "|{}|{}", k, v.as_str().unwrap())?;
@@ -536,7 +550,7 @@ fn translate_to_wiki(
                 s.push_str(link);
                 continue;
             };
-            let Some((display, rest)) = rest.split_once("</link>") else {
+            let Some((link_display, rest)) = rest.split_once("</link>") else {
                 tracing::warn!("got wierd link: {}", link);
                 continue;
             };
@@ -546,21 +560,22 @@ fn translate_to_wiki(
                 .and_then(|c| c.get(thing))
                 .and_then(|c| c.as_str())
             {
-                if link == display {
-                    s.push_str(&format!("[[{}]]", link));
+                if link == link_display {
+                    s.push_str(&format!("[[{link}]]"));
                 } else {
-                    s.push_str(&format!("[[{}|{}]]", link, display));
+                    s.push_str(&format!("[[{link}|{link_display}]]"));
                 }
             } else if let Some(item) = pedia.lookup_key(thing) {
-                if item.title == display {
+                if item.title == link_display {
                     s.push_str(&format!("[[{}]]", item.title));
                 } else {
-                    s.push_str(&format!("[[{}|{}]]", item.title, display));
+                    s.push_str(&format!("[[{}|{}]]", item.title, link_display));
                 }
             } else if let Some(slot) = thing.strip_prefix("Slot") {
-                s.push_str(&format!("{} slot", slot));
+                s.push_str(&format!("{slot} slot"));
             } else {
-                s.push_str(&format!("[[{}|{}]]", thing, display));
+                tracing::warn!("no link found for {thing} - {}", link_display);
+                s.push_str(&link_display);
             }
             s.push_str(rest)
         }
@@ -575,57 +590,32 @@ fn recipe_amount<'a>(
     pedia: &'a Stationpedia,
     ingredient: &'a str,
     creator_prefab_name: &str,
-) -> (&'static str, &'a str) {
+) -> (&'static str, Vec<&'a str>) {
     // FIXME: Use correct ingredient name, Soy is for example really Soybean, Steel could be Can, etc etc
-
-    let ingredient = match creator_prefab_name {
-        "ApplianceMicrowave" | "StructureAutomatedOven" => {
-            // takes uncooked items.
-            pedia
-                .pages
-                .iter()
-                .filter_map(|p| p.item.as_ref().map(|item| (p, item)))
-                .filter(|(_, i)| i.reagents.is_some())
-                .filter(|(_, i)| {
-                    i.reagents
-                        .as_ref()
-                        .unwrap()
-                        .iter()
-                        .any(|(r, a)| r == ingredient && a > &0.0)
-                })
-                .find(|(_, item)| item.food.as_ref().is_some_and(|f| f.nutrition_quality == 1))
-                .map(|(i, _)| &*i.title)
-                .unwrap_or(ingredient)
-        }
-        "AppliancePackagingMachine" | "StructureAdvancedPackagingMachine" => match ingredient {
-            "Steel" => "Empty Can",
-            _ => pedia
-                .pages
-                .iter()
-                .filter_map(|p| p.item.as_ref().map(|item| (p, item)))
-                .filter(|(_, i)| i.reagents.is_some())
-                .filter(|(_, i)| {
-                    i.reagents
-                        .as_ref()
-                        .unwrap()
-                        .iter()
-                        .any(|(r, a)| r == ingredient && a > &0.0)
-                })
-                .find(|(_, item)| {
-                    item.food
-                        .as_ref()
-                        .is_some_and(|f| f.nutrition_quality == 2 || ingredient == "Oil")
-                })
-                .map(|(i, _)| &*i.title)
-                .unwrap_or(ingredient),
-        },
-        "ApplianceChemistryStation" => match ingredient {
-            "Fenoxitone" => "Fern",
-            _ => ingredient,
-        },
-        _ => ingredient,
-    };
-    let amount = match ingredient {
+    let ingredient = pedia
+        .lookup_prefab_name(creator_prefab_name)
+        .and_then(|p| p.resource_consumer.as_ref())
+        .map(|rc| {
+            rc.consumed_resources.iter().filter_map(|i| {
+                let ingr = pedia.lookup_prefab_name(i)?;
+                ingr.item
+                    .as_ref()?
+                    .reagents
+                    .as_ref()?
+                    .get(ingredient)
+                    .filter(|a| a >= &&1.0)
+                    .map(move |_| {
+                        if !ingr.title.contains("Ingot (") {
+                            &ingr.title
+                        } else {
+                            ingredient
+                        }
+                    })
+            })
+        })
+        .map(|i| i.collect())
+        .unwrap_or(vec![ingredient]);
+    let amount = match ingredient[0] {
         "Iron" | "Gold" | "Carbon" | "Uranium" | "Copper" | "Steel" | "Hydrocarbon" | "Silver"
         | "Electrum" | "Invar" | "Constantan" | "Solder" | "Silicon" | "Waspaloy" | "Stellite"
         | "Inconel" | "Hastelloy" | "Astroloy" | "Cobalt" | "Flour" => "g",
