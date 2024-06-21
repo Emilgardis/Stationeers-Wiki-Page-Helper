@@ -8,6 +8,136 @@ pub struct Stationpedia {
     pub reagents: IndexMap<String, Reagent>,
     #[serde(rename = "scriptCommands")]
     pub script_commands: std::collections::BTreeMap<String, Command>,
+    pub core_prefabs: Vec<CorePrefab>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+
+pub struct CorePrefabSlot {
+    #[serde(rename = "SlotClass")]
+    pub slot_class: String,
+    #[serde(rename = "SlotName")]
+    pub slot_name: String,
+    #[serde(rename = "StringHash")]
+    pub string_hash: i64,
+    #[serde(rename = "StringKey")]
+    pub string_key: String,
+}
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+
+pub struct HumanPrefab {
+    #[serde(rename = "BaseNutritionStorage")]
+    pub base_nutrition_storage: f64,
+    #[serde(rename = "CriticalHealth")]
+    pub critical_health: f64,
+    #[serde(rename = "CriticalHydration")]
+    pub critical_hydration: f64,
+    #[serde(rename = "CriticalHygiene")]
+    pub critical_hygiene: f64,
+    #[serde(rename = "CriticalMood")]
+    pub critical_mood: f64,
+    #[serde(rename = "CriticalNutrition")]
+    pub critical_nutrition: f64,
+    #[serde(rename = "CriticalOxygen")]
+    pub critical_oxygen: f64,
+    #[serde(rename = "DehydrationDamageRateAwake")]
+    pub dehydration_damage_rate_awake: f64,
+    #[serde(rename = "DehydrationDamageRateSleeping")]
+    pub dehydration_damage_rate_sleeping: f64,
+    #[serde(rename = "FoodQuality")]
+    pub food_quality: f64,
+    #[serde(rename = "FullNutrition")]
+    pub full_nutrition: f64,
+    #[serde(rename = "Hydration")]
+    pub hydration: f64,
+    #[serde(rename = "Hygiene")]
+    pub hygiene: f64,
+    #[serde(rename = "MaxFoodQuality")]
+    pub max_food_quality: f64,
+    #[serde(rename = "MaxHydration")]
+    pub max_hydration: f64,
+    #[serde(rename = "MaxHygiene")]
+    pub max_hygiene: f64,
+    #[serde(rename = "MaxMood")]
+    pub max_mood: f64,
+    #[serde(rename = "MaxOxygenStorage")]
+    pub max_oxygen_storage: f64,
+    #[serde(rename = "Mood")]
+    pub mood: f64,
+    #[serde(rename = "Nutrition")]
+    pub nutrition: f64,
+    #[serde(rename = "NutritionDamageRateAwake")]
+    pub nutrition_damage_rate_awake: f64,
+    #[serde(rename = "NutritionDamageRateSleeping")]
+    pub nutrition_damage_rate_sleeping: f64,
+    #[serde(rename = "Oxygenation")]
+    pub oxygenation: f64,
+    #[serde(rename = "Slots")]
+    pub slots: Vec<CorePrefabSlot>,
+    #[serde(rename = "ToxicPartialPressureDamage")]
+    pub toxic_partial_pressure_damage: f64,
+    #[serde(rename = "ToxicPartialPressureWarning")]
+    pub toxic_partial_pressure_warning: f64,
+    #[serde(rename = "WarningHealth")]
+    pub warning_health: f64,
+    #[serde(rename = "WarningHydration")]
+    pub warning_hydration: f64,
+    #[serde(rename = "WarningHygiene")]
+    pub warning_hygiene: f64,
+    #[serde(rename = "WarningMood")]
+    pub warning_mood: f64,
+    #[serde(rename = "WarningNutrition")]
+    pub warning_nutrition: f64,
+    #[serde(rename = "WarningOxygen")]
+    pub warning_oxygen: f64,
+}
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+
+pub struct CorePrefabItem {
+    #[serde(rename = "SlotClass")]
+    pub slot_class: String,
+    #[serde(rename = "SortingClass")]
+    pub sorting_class: String,
+}
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+
+pub struct CorePrefabThermal {
+    #[serde(rename = "Convection")]
+    pub convection: f64,
+    #[serde(rename = "Radiation")]
+    pub radiation: f64,
+}
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+
+pub struct CorePrefab {
+    #[serde(rename = "Human")]
+    pub human: Option<HumanPrefab>,
+    #[serde(rename = "Item")]
+    pub item: CorePrefabItem,
+    #[serde(rename = "Name")]
+    pub name: String,
+    #[serde(rename = "Thermal")]
+    pub thermal: Option<CorePrefabThermal>,
+    #[serde(rename = "Organ")]
+    pub organ: Option<serde_json::value::Value>,
+    #[serde(rename = "Lungs")]
+    pub lungs: Option<Lungs>,
+    #[serde(rename = "Brain")]
+    pub brain: Option<serde_json::value::Value>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Lungs {
+    #[serde(rename = "BreathableType")]
+    pub breathable_type: String,
+    #[serde(rename = "TemperatureMax")]
+    pub temperature_max: f64,
+    #[serde(rename = "TemperatureMin")]
+    pub temperature_min: f64,
+    #[serde(rename = "ToxicTypes")]
+    pub toxic_types: Vec<String>,
+    #[serde(rename = "Volume")]
+    pub volume: f64,
 }
 
 impl Stationpedia {

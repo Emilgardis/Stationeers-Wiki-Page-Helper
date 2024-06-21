@@ -12,13 +12,6 @@ pub struct Wikibox {
     item: String,
 }
 
-#[derive(Clone)]
-pub struct Hit<'a> {
-    pub page: &'a Page,
-    pub constructs: &'a Vec<&'a Page>,
-    pub constructed_by: Option<&'a Page>,
-}
-
 impl Page {
     fn structure(&self, pedia: &Stationpedia) -> color_eyre::Result<Option<String>> {
         let mut out = String::new();
@@ -246,7 +239,7 @@ impl Page {
                 {{Recipe
             ",
             )
-            .trim_start(),
+            .trim(),
         );
         for recipe in &item.recipes {
             let mut ingredients = String::new();
@@ -256,10 +249,6 @@ impl Page {
                 .filter(|(_, q)| *q > &0.0)
                 .enumerate()
             {
-                let _name = &pedia
-                    .lookup_prefab_name(ingredient)
-                    .map(|i| &i.title)
-                    .unwrap_or(ingredient);
                 if i > 0 {
                     ingredients.push_str(", ");
                 }
@@ -285,9 +274,9 @@ impl Page {
             };
             let time = recipe.time;
             let energy = recipe.energy;
-            writeln!(out, "|{{{{Recipe/row |machine = {creator}{tier} |mats = {ingredients} |time = {time} |energy = {energy}}}}}")?;
+            write!(out, "\n|{{{{Recipe/row |machine = {creator}{tier} |mats = {ingredients} |time = {time} |energy = {energy}}}}}")?;
         }
-        write!(out, "}}}}")?;
+        write!(out, "\n}}}}")?;
         Ok(Some(out))
     }
 
