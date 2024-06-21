@@ -2,7 +2,7 @@ use indexmap::IndexMap;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename = "Stationpedia", deny_unknown_fields)]
+#[serde(rename = "Stationpedia")]
 pub struct Stationpedia {
     pub pages: Vec<Page>,
     pub reagents: IndexMap<String, Reagent>,
