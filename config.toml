@@ -382,7 +382,9 @@ replace = [
 ]
 [logic.device."StructureSorter"]
 "Mode" = { description = "The mode of the {device}, '''Split''' does alternate outputs, '''Filter''' decides output via [[Motherboard (Sorter)]], '''Logic''' determines output via parameter '''Output'''" }
-"Output" = { values = { "-1" = "Unset", "0" = "Straight", "1" = "Side" }, description = "Decides which side the next item will be sent to.\nIn '''Logic''' mode, defaults to -1 after action. In '''Split''' mode, alternates between 0 and 1 after action. Does nothing in '''Filter''' mode." }
+"Output" = { values = { "-1" = "Unset", "0" = "Straight (Near Power Switch)", "1" = "Side" }, description = """Decides which side the next item will be sent to.
+In '''Logic''' mode, defaults to -1 after action. In '''Split''' mode, alternates between 0 and 1 after action. Does nothing in '''Filter''' mode.
+When set to 0 the item will exit the output slot closest to the power switch.  When set to 1, the item will exit the slot furthest from the power switch.""" }
 [logic.device."StructureAdvancedFurnace"]
 # From `UpdateEachFrame` on `FurnaceBase.cs`
 "Mode" = { values = [

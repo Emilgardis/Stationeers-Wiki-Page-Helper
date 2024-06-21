@@ -3814,6 +3814,16 @@
           "value": 39,
           "deprecated": false,
           "description": ""
+        },
+        "Crate": {
+          "value": 40,
+          "deprecated": false,
+          "description": ""
+        },
+        "Portables": {
+          "value": 41,
+          "deprecated": false,
+          "description": ""
         }
       }
     },
