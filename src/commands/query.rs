@@ -1,3 +1,4 @@
+#![cfg(feature = "mw")]
 //! Query items on wiki
 
 use color_eyre::eyre;
