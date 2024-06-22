@@ -63,7 +63,8 @@ See [[IC10]] for the primary page for the IC10 instruction set. This page lists 
                 category.join(" / "),
             ));
 
-            if let Some(inss) = instructions.get(category) {
+            if let Some(inss) = instructions.get_mut(category) {
+                inss.sort_by_key(|ins| ins.order);
                 render(inss, &re, &mut output)?;
             }
             writeln!(output)?;
@@ -117,6 +118,7 @@ struct ConfigInstruction {
     desc: Option<String>,
     syntax: Option<String>,
     info: crate::stationpedia::Command,
+    order: usize,
 }
 
 #[derive(Debug)]
@@ -134,11 +136,12 @@ impl<'doc> toml_edit::visit::Visit<'doc> for InstructionCollector {
             return;
         }
         if key == "instructions" {
-            if node
+            if let Some(e) = node
                 .as_array()
                 .unwrap()
                 .iter()
-                .any(|i| i.as_str().is_some_and(|op| op == self.command))
+                .enumerate()
+                .find_map(|(e, l)| l.as_str().filter(|op| op == &self.command).map(|_| e))
             {
                 self.actual_instruction = Some(ConfigInstruction {
                     command: self.command.clone(),
@@ -148,13 +151,15 @@ impl<'doc> toml_edit::visit::Visit<'doc> for InstructionCollector {
                     desc: None,
                     syntax: None,
                     info: self.info.take().unwrap(),
+                    order: e,
                 });
-            } else if let Some(it) = node.as_array().unwrap().iter().find_map(|i| {
+            } else if let Some((e, it)) = node.as_array().unwrap().iter().enumerate().find_map(|(e, i)| {
                 let it = i.as_inline_table();
                 it.and_then(|t| t.get("op").and_then(|op| op.as_str()))
                     .is_some_and(|op| op == self.command)
                     .then_some(it)
                     .flatten()
+                    .map(|it| (e, it))
             }) {
                 self.actual_instruction = Some(ConfigInstruction {
                     command: self.command.clone(),
@@ -176,6 +181,7 @@ impl<'doc> toml_edit::visit::Visit<'doc> for InstructionCollector {
                         .and_then(|e| e.as_str())
                         .map(|s| textwrap::dedent(s).trim().to_owned()),
                     info: self.info.take().unwrap(),
+                    order: e
                 });
             }
             return;

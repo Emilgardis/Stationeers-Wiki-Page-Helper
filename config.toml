@@ -218,16 +218,22 @@ instructions = [
 [instructions."Branching"."Comparison"]
 instructions = [
     "bap",
+    "brap",
     "bapal",
     { op = "bapz", desc = "Branch to line c if abs(a) <= max(b * abs(a), float.epsilon * 8)" },
+    { op = "brapz", desc = "Relative branch to line c if abs(a) <= max(b * abs(a), float.epsilon * 8)" },
     { op = "bapzal", desc = "Branch to line c if abs(a) <= max(b * abs(a), float.epsilon * 8) and store next line number in ra" },
     "beq",
+    "breq",
     "beqal",
     "beqz",
+    "breqz",
     "beqzal",
     "bge",
+    "brge",
     "bgeal",
     "bgez",
+    "brgez",
     "bgezal",
     { op = "bgt", example = """
     An example of a '''Schmitt''' trigger, turning on a device if the temperature is too low, and turning it off if it's too high and finally
@@ -256,12 +262,16 @@ instructions = [
     j start
     }}
     """ },
+    "brgt",
     "bgtal",
     "bgtz",
+    "brgtz",
     "bgtzal",
     "ble",
+    "brle",
     "bleal",
     "blez",
+    "brlez",
     "blezal",
     { op = "blt", example = """
     An example of a '''Schmitt''' trigger, turning on a device if the temperature is too low, and turning it off if it's too high and finally
@@ -290,35 +300,25 @@ instructions = [
     j start
     }}
     """ },
+    "brlt",
     "bltal",
     "bltz",
+    "brltz",
     "bltzal",
     "bna",
+    "brna",
     "bnaal",
     "bnan",
+    "brnan",
     { op = "bnaz", desc = "Branch to line c if abs(a) > max (b * abs(a), float.epsilon * 8)" },
+    { op = "brnaz", desc = "Relative branch to line c if abs(a) > max(b * abs(a), float.epsilon * 8)" },
     { op = "bnazal", desc = "Branch to line c if abs(a) > max (b * abs(a), float.epsilon * 8) and store next line number in ra" },
     "bne",
+    "brne",
     "bneal",
     "bnez",
-    "bnezal",
-    "brap",
-    { op = "brapz", desc = "Relative branch to line c if abs(a) <= max(b * abs(a), float.epsilon * 8)" },
-    "breq",
-    "breqz",
-    "brge",
-    "brgez",
-    "brgt",
-    "brgtz",
-    "brle",
-    "brlez",
-    "brlt",
-    "brltz",
-    "brna",
-    "brnan",
-    { op = "brnaz", desc = "Relative branch to line c if abs(a) > max(b * abs(a), float.epsilon * 8)" },
-    "brne",
     "brnez",
+    "bnezal",
 ]
 [instructions."Deprecated"]
 instructions = ["label"]
