@@ -151,7 +151,9 @@ instructions = [
 instructions = ["sdns", "sdse"]
 [instructions."Comparison"."Value"]
 instructions = [
-    "sap",
+    { op = "sap", example = """
+    Set register to 1 if a and b are close enough to each other with the scaling factor of c. Equivalent to Python [https://docs.python.org/3/library/math.html#math.isclose math.isclose]
+    """ },
     { op = "sapz", desc = "Register = 1 if abs(a) <= max(b * abs(a), float.epsilon * 8), otherwise 0" },
     "seq",
     "seqz",
@@ -217,7 +219,9 @@ instructions = [
 ]
 [instructions."Branching"."Comparison"]
 instructions = [
-    "bap",
+    { op = "bap", example = """
+    Branch if a and b are close enough to each other with the scaling factor of c. Equivalent to Python [https://docs.python.org/3/library/math.html#math.isclose math.isclose]
+    """ },
     "brap",
     "bapal",
     { op = "bapz", desc = "Branch to line c if abs(a) <= max(b * abs(a), float.epsilon * 8)" },
@@ -339,6 +343,7 @@ instructions = ["label"]
 "TotalMolesInput".type = "Float"
 "TotalMolesOutput".type = "Float"
 "AirRelease".type = "Boolean"
+"Filtration".type = "Boolean"
 "Power".type = "Boolean"
 "Power".values = ["Unpowered", "Powered"]
 "Lock".type = "Boolean"
@@ -418,6 +423,28 @@ Mode.values = [
 "Setting".type = "Float"
 "Setting".values = "0.0 to 100.0"
 "Ratio".description = "Setting / Maximum"
+[logic.device."StructurePressurantValve"]
+"Setting".values = "0.0 to 60795.0"
+[logic.device."StructurePurgeValve"]
+"Setting".values = "0.0 to 60795.0"
+[logic.device."StructurePressureRegulator"]
+"Setting".values = "0.0 to 60795.0"
+[logic.device."StructureBackPressureRegulator"]
+"Setting".values = "0.0 to 60795.0"
+[logic.device.ItemHardsuitHelmet]
+replace = [
+    { regex = "in device's [aA]tmosphere", replace = "inside the {device}" },
+    { regex = "in device [aA]tmosphere", replace = "inside the {device}" },
+]
+"Open".description = "Used to open or close the helmet visor."
+"On".description = "Used to turn the helmet light on or off."
+[logic.device.ItemHardSuit]
+replace = [
+    { regex = "in device's [aA]tmosphere", replace = "inside the {device}" },
+    { regex = "in device [aA]tmosphere", replace = "inside the {device}" },
+]
+"On".description = "Controls A/C power for the suit. Required for temperature control. "
+"Error".description = "The suit's error value. By default, if the suit has no filter it will write the error parameter to 1."
 
 [[logic.replace]]
 regex = "device's device's"
@@ -456,6 +483,9 @@ replace = "of [[Carbon Dioxide]]"
 [[logic.replace]]
 regex = "of water"
 replace = "of [[Water]]"
+[[logic.replace]]
+regex = "="
+replace = "{{=}}"
 
 [bot]
 api_url = "https://stationeers-wiki.com/api.php"

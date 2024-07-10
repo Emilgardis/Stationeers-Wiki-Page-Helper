@@ -1342,6 +1342,11 @@
           "value": 268,
           "deprecated": false,
           "description": "Provides the hash value for the name of the object as a 32 bit integer."
+        },
+        "Altitude": {
+          "value": 269,
+          "deprecated": false,
+          "description": "The altitude that the rocket above the planet's surface. -1 if the rocket is in space."
         }
       }
     },
@@ -2879,6 +2884,11 @@
           "value": 268,
           "deprecated": false,
           "description": "Provides the hash value for the name of the object as a 32 bit integer."
+        },
+        "Altitude": {
+          "value": 269,
+          "deprecated": false,
+          "description": "The altitude that the rocket above the planet's surface. -1 if the rocket is in space."
         }
       }
     },
@@ -3965,7 +3975,7 @@
           "deprecated": false,
           "description": ""
         },
-        "Optimal": {
+        "Low": {
           "value": 1,
           "deprecated": false,
           "description": ""
