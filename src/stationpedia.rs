@@ -445,9 +445,9 @@ pub struct Recipe {
     pub creator_prefab_name: String,
     #[serde(rename = "TierName")]
     pub tier_name: String,
-    #[serde(rename = "Time")]
+    #[serde(rename = "Time", default)]
     pub time: f64,
-    #[serde(rename = "Energy")]
+    #[serde(rename = "Energy", default)]
     pub energy: f64,
     #[serde(rename = "Temperature")]
     pub temperature: RecipeTemperature,
@@ -455,7 +455,7 @@ pub struct Recipe {
     pub pressure: RecipePressure,
     #[serde(rename = "RequiredMix")]
     pub required_mix: RecipeGasMix,
-    #[serde(rename = "CountTypes")]
+    #[serde(rename = "CountTypes", default)]
     pub count_types: i64,
     #[serde(flatten)]
     pub reagents: IndexMap<String, f64>,
