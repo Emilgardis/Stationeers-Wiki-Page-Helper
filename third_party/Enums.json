@@ -41,12 +41,12 @@
         "PressureExternal": {
           "value": 7,
           "deprecated": false,
-          "description": "Setting for external pressure safety, in KPa"
+          "description": "Setting for external pressure safety, in KPa. Represents the target pressure of the external atmosphere."
         },
         "PressureInternal": {
           "value": 8,
           "deprecated": false,
-          "description": "Setting for internal pressure safety, in KPa"
+          "description": "Setting for internal pressure safety, in KPa. Represents the target pressure of the atmosphere inside the connected pipe network."
         },
         "Activate": {
           "value": 9,
@@ -306,7 +306,7 @@
         "RequestHash": {
           "value": 60,
           "deprecated": false,
-          "description": "When set to the unique identifier, requests an item of the provided type from the device"
+          "description": "When set to the unique identifier, re quests an item of the provided type from the device"
         },
         "CompletionRatio": {
           "value": 61,
@@ -1347,6 +1347,21 @@
           "value": 269,
           "deprecated": false,
           "description": "The altitude that the rocket above the planet's surface. -1 if the rocket is in space."
+        },
+        "TargetSlotIndex": {
+          "value": 270,
+          "deprecated": false,
+          "description": "The slot index that the target device that this device will try to interact with"
+        },
+        "TargetPrefabHash": {
+          "value": 271,
+          "deprecated": false,
+          "description": "The prefab"
+        },
+        "Extended": {
+          "value": 272,
+          "deprecated": false,
+          "description": "Extended"
         }
       }
     },
@@ -1366,7 +1381,7 @@
         "OccupantHash": {
           "value": 2,
           "deprecated": false,
-          "description": "returns the has of the current occupant, the unique identifier of the thing"
+          "description": "returns the hash of the current occupant, the unique identifier of the thing"
         },
         "Quantity": {
           "value": 3,
@@ -1386,7 +1401,7 @@
         "Health": {
           "value": 6,
           "deprecated": false,
-          "description": "returns the health of the plant in the slot"
+          "description": "Returns the health of the plant in the slot"
         },
         "Growth": {
           "value": 7,
@@ -1487,6 +1502,16 @@
           "value": 26,
           "deprecated": false,
           "description": "Unique Reference Identifier for this object"
+        },
+        "HarvestedHash": {
+          "value": 27,
+          "deprecated": false,
+          "description": "No description available"
+        },
+        "Mode": {
+          "value": 28,
+          "deprecated": false,
+          "description": "No description available"
         }
       }
     },
@@ -1583,12 +1608,12 @@
         "PressureExternal": {
           "value": 7,
           "deprecated": false,
-          "description": "Setting for external pressure safety, in KPa"
+          "description": "Setting for external pressure safety, in KPa. Represents the target pressure of the external atmosphere."
         },
         "PressureInternal": {
           "value": 8,
           "deprecated": false,
-          "description": "Setting for internal pressure safety, in KPa"
+          "description": "Setting for internal pressure safety, in KPa. Represents the target pressure of the atmosphere inside the connected pipe network."
         },
         "Activate": {
           "value": 9,
@@ -1848,7 +1873,7 @@
         "RequestHash": {
           "value": 60,
           "deprecated": false,
-          "description": "When set to the unique identifier, requests an item of the provided type from the device"
+          "description": "When set to the unique identifier, re quests an item of the provided type from the device"
         },
         "CompletionRatio": {
           "value": 61,
@@ -2889,6 +2914,21 @@
           "value": 269,
           "deprecated": false,
           "description": "The altitude that the rocket above the planet's surface. -1 if the rocket is in space."
+        },
+        "TargetSlotIndex": {
+          "value": 270,
+          "deprecated": false,
+          "description": "The slot index that the target device that this device will try to interact with"
+        },
+        "TargetPrefabHash": {
+          "value": 271,
+          "deprecated": false,
+          "description": "The prefab"
+        },
+        "Extended": {
+          "value": 272,
+          "deprecated": false,
+          "description": "Extended"
         }
       }
     },
@@ -2908,7 +2948,7 @@
         "OccupantHash": {
           "value": 2,
           "deprecated": false,
-          "description": "returns the has of the current occupant, the unique identifier of the thing"
+          "description": "returns the hash of the current occupant, the unique identifier of the thing"
         },
         "Quantity": {
           "value": 3,
@@ -2928,7 +2968,7 @@
         "Health": {
           "value": 6,
           "deprecated": false,
-          "description": "returns the health of the plant in the slot"
+          "description": "Returns the health of the plant in the slot"
         },
         "Growth": {
           "value": 7,
@@ -3029,6 +3069,16 @@
           "value": 26,
           "deprecated": false,
           "description": "Unique Reference Identifier for this object"
+        },
+        "HarvestedHash": {
+          "value": 27,
+          "deprecated": false,
+          "description": "No description available"
+        },
+        "Mode": {
+          "value": 28,
+          "deprecated": false,
+          "description": "No description available"
         }
       }
     },
@@ -3834,6 +3884,11 @@
           "value": 41,
           "deprecated": false,
           "description": ""
+        },
+        "RocketPayload": {
+          "value": 42,
+          "deprecated": false,
+          "description": ""
         }
       }
     },
@@ -3855,6 +3910,11 @@
           "deprecated": false,
           "description": ""
         },
+        "Air": {
+          "value": 3,
+          "deprecated": false,
+          "description": ""
+        },
         "CarbonDioxide": {
           "value": 4,
           "deprecated": false,
@@ -3862,6 +3922,11 @@
         },
         "Volatiles": {
           "value": 8,
+          "deprecated": false,
+          "description": ""
+        },
+        "Fuel": {
+          "value": 9,
           "deprecated": false,
           "description": ""
         },
@@ -3962,6 +4027,11 @@
         },
         "Chart": {
           "value": 5,
+          "deprecated": false,
+          "description": ""
+        },
+        "Deploy": {
+          "value": 6,
           "deprecated": false,
           "description": ""
         }
@@ -4087,6 +4157,191 @@
         },
         "MissingRecipeReagent": {
           "value": 9,
+          "deprecated": false,
+          "description": ""
+        }
+      }
+    },
+    "TraderInstruction": {
+      "enumName": "TraderInstruction",
+      "values": {
+        "None": {
+          "value": 0,
+          "deprecated": false,
+          "description": ""
+        },
+        "WriteTraderData": {
+          "value": 1,
+          "deprecated": false,
+          "description": ""
+        },
+        "StrongestContactIdHash": {
+          "value": 2,
+          "deprecated": false,
+          "description": ""
+        },
+        "StrongestContactMetaData": {
+          "value": 3,
+          "deprecated": false,
+          "description": ""
+        },
+        "StrongestContactSignalData": {
+          "value": 4,
+          "deprecated": false,
+          "description": ""
+        },
+        "WriteTraderBuyData": {
+          "value": 5,
+          "deprecated": false,
+          "description": ""
+        },
+        "WriteTraderSellData": {
+          "value": 6,
+          "deprecated": false,
+          "description": ""
+        },
+        "TraderBuyThingData": {
+          "value": 7,
+          "deprecated": false,
+          "description": ""
+        },
+        "TraderBuyThingChildData": {
+          "value": 8,
+          "deprecated": false,
+          "description": ""
+        },
+        "TraderBuyGasData": {
+          "value": 9,
+          "deprecated": false,
+          "description": ""
+        },
+        "TraderSellThingData": {
+          "value": 10,
+          "deprecated": false,
+          "description": ""
+        },
+        "TraderSellGasData": {
+          "value": 11,
+          "deprecated": false,
+          "description": ""
+        },
+        "TraderSellThingChildData": {
+          "value": 12,
+          "deprecated": false,
+          "description": ""
+        },
+        "FilterPrefabHashEquals": {
+          "value": 13,
+          "deprecated": false,
+          "description": ""
+        },
+        "FilterPrefabHashNotEquals": {
+          "value": 14,
+          "deprecated": false,
+          "description": ""
+        },
+        "FilterSortingClassCompare": {
+          "value": 15,
+          "deprecated": false,
+          "description": ""
+        },
+        "FilterQuantityCompare": {
+          "value": 16,
+          "deprecated": false,
+          "description": ""
+        },
+        "FilterGasContains": {
+          "value": 17,
+          "deprecated": false,
+          "description": ""
+        },
+        "FilterGasNotContains": {
+          "value": 18,
+          "deprecated": false,
+          "description": ""
+        }
+      }
+    },
+    "ShuttleType": {
+      "enumName": "ShuttleType",
+      "values": {
+        "None": {
+          "value": 0,
+          "deprecated": false,
+          "description": ""
+        },
+        "Small": {
+          "value": 1,
+          "deprecated": false,
+          "description": ""
+        },
+        "SmallGas": {
+          "value": 2,
+          "deprecated": false,
+          "description": ""
+        },
+        "Medium": {
+          "value": 3,
+          "deprecated": false,
+          "description": ""
+        },
+        "MediumGas": {
+          "value": 4,
+          "deprecated": false,
+          "description": ""
+        },
+        "Large": {
+          "value": 5,
+          "deprecated": false,
+          "description": ""
+        },
+        "LargeGas": {
+          "value": 6,
+          "deprecated": false,
+          "description": ""
+        },
+        "MediumPlane": {
+          "value": 7,
+          "deprecated": false,
+          "description": ""
+        },
+        "LargePlane": {
+          "value": 8,
+          "deprecated": false,
+          "description": ""
+        }
+      }
+    },
+    "HashType": {
+      "enumName": "HashType",
+      "values": {
+        "Prefab": {
+          "value": 0,
+          "deprecated": false,
+          "description": ""
+        },
+        "GasLiquid": {
+          "value": 1,
+          "deprecated": false,
+          "description": ""
+        }
+      }
+    },
+    "ContactTier": {
+      "enumName": "ContactTier",
+      "values": {
+        "Close": {
+          "value": 0,
+          "deprecated": false,
+          "description": ""
+        },
+        "Medium": {
+          "value": 1,
+          "deprecated": false,
+          "description": ""
+        },
+        "Far": {
+          "value": 2,
           "deprecated": false,
           "description": ""
         }
