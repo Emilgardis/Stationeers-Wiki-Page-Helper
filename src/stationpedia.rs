@@ -42,8 +42,8 @@ pub struct HumanPrefab {
     pub critical_oxygen: f64,
     #[serde(rename = "DehydrationDamageRateAwake")]
     pub dehydration_damage_rate_awake: f64,
-    #[serde(rename = "DehydrationDamageRateSleeping")]
-    pub dehydration_damage_rate_sleeping: f64,
+    // #[serde(rename = "DehydrationDamageRateSleeping")]
+    // pub dehydration_damage_rate_sleeping: f64,
     #[serde(rename = "FoodQuality")]
     pub food_quality: f64,
     #[serde(rename = "FullNutrition")]
@@ -68,8 +68,8 @@ pub struct HumanPrefab {
     pub nutrition: f64,
     #[serde(rename = "NutritionDamageRateAwake")]
     pub nutrition_damage_rate_awake: f64,
-    #[serde(rename = "NutritionDamageRateSleeping")]
-    pub nutrition_damage_rate_sleeping: f64,
+    // #[serde(rename = "NutritionDamageRateSleeping")]
+    // pub nutrition_damage_rate_sleeping: f64,
     #[serde(rename = "Oxygenation")]
     pub oxygenation: f64,
     #[serde(rename = "Slots")]
@@ -421,8 +421,8 @@ pub struct Item {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 
 pub struct Suit {
-    #[serde(rename = "HygineReductionMultiplier")]
-    pub hygine_reduction_multiplier: f64,
+    // #[serde(rename = "HygineReductionMultiplier")]
+    // pub hygine_reduction_multiplier: f64,
     #[serde(rename = "WasteMaxPressure")]
     pub pressure: f64,
 }

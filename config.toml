@@ -34,6 +34,7 @@ instructions = [
     }}
     """ },
     "div",
+    "pow",
     { op = "exp", desc = "exp(a) or e^a" },
     "floor",
     { op = "log", desc = "base e log(a) or ln(a)" },
@@ -63,6 +64,7 @@ instructions = [
     "sqrt",
     "sub",
     "trunc",
+    "lerp",
 ]
 [instructions."Mathematical"."Trigonometric"]
 instructions = [
@@ -100,7 +102,6 @@ instructions = [
     l r0 Sensor Temperature
     }}
     """ },
-    "ld",
     "lr",
     { op = "ls", example = """
     Read from the second slot of device on d0, stores 1 in r0 if it's occupied, 0 otherwise.
@@ -117,7 +118,6 @@ instructions = [
     s d0 Setting r0
     }}
     """ },
-    "sd",
     "ss",
     "rmap",
 ]
@@ -133,18 +133,33 @@ instructions = [
     "nor",
     { op = "not", note = "This is a bitwise operation, the NOT of 1 => -2, etc. You may want to use seqz instead" },
     "or",
-    "sla",
+    {op = "sla", desc = "Performs a bitwise arithmetic left shift operation on the binary representation of a value. It shifts the bits to the left and fills the vacated rightmost bits with zeros (note that this is indistinguishable from 'sll')."},
     "sll",
     "sra",
     "srl",
     "xor",
+    "ext",
+    "ins"
 ]
 [instructions."Comparison"]
 instructions = [
     { op = "select", note = "This operation can be used as a simple ternary condition", example = """
+    <b>1)</b><br/>
+    move r0 <s style="text-decoration-line:underline;text-decoration-color:red;">0</s><br/>
+    select <s style="text-decoration-line:underline;text-decoration-color:red;>r1</s> r0 10 <s style="text-decoration-line:underline;text-decoration-color:red;>200</s>
     {{ICCode|
+    move r0 0
+    select r1 r0 10 200
+    }}
+    <br/>after run, <s style="text-decoration-line:underline;text-decoration-color:red;">r1 = 200</s>
+    <br/><br/><b>2)</b><br/>
+    move r0 <s style="text-decoration-line:underline;text-decoration-color:red;">5</s><br/>
+    select <s style="text-decoration-line:underline;text-decoration-color:red;>r1</s> r0 <s style="text-decoration-line:underline;text-decoration-color:red;>10</s> 200
+    {{ICCode|
+    move r0 1
     select r1 r0 10 100
     }}
+    <br/>after run, <s style="text-decoration-line:underline;text-decoration-color:red;">r1 = 10</s>
     """ },
 ]
 [instructions."Comparison"."Device Pin"]
@@ -201,6 +216,7 @@ instructions = [{ op = "j", example = """
     """ }, "jr"]
 [instructions."Branching"."Device Pin"]
 instructions = [
+    "bdnvl","bdnvs",
     { op = "bdns", syntax = "bdns d? a(r?{{!}}num)" },
     { op = "bdnsal", syntax = "bdnsal d? a(r?{{!}}num)" },
     { op = "bdse", syntax = "bdse d? a(r?{{!}}num)" },
@@ -315,7 +331,7 @@ instructions = [
     "bnan",
     "brnan",
     { op = "bnaz", desc = "Branch to line c if abs(a) > max (b * abs(a), float.epsilon * 8)" },
-    { op = "brnaz", desc = "Relative branch to line c if abs(a) > max(b * abs(a), float.epsilon * 8)" },
+    { op = "brnaz", desc = "Relative jump to line c if abs(a) > max(b * abs(a), float.epsilon * 8)" },
     { op = "bnazal", desc = "Branch to line c if abs(a) > max (b * abs(a), float.epsilon * 8) and store next line number in ra" },
     "bne",
     "brne",
@@ -325,7 +341,7 @@ instructions = [
     "bnezal",
 ]
 [instructions."Deprecated"]
-instructions = ["label"]
+instructions = ["label", "ld", "sd"]
 [logic]
 [logic.types]
 "Combustion".type = "Boolean"

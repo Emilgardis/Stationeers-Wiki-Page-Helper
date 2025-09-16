@@ -461,12 +461,12 @@
         "SettingInput": {
           "value": 91,
           "deprecated": false,
-          "description": "<A:EN:-1139210406>"
+          "description": "The input setting for the device"
         },
         "SettingOutput": {
           "value": 92,
           "deprecated": false,
-          "description": "<A:EN:1605622326>"
+          "description": "The output setting for the device"
         },
         "CurrentResearchPodType": {
           "value": 93,
@@ -881,7 +881,7 @@
         "SolarIrradiance": {
           "value": 176,
           "deprecated": false,
-          "description": "<A:EN:-1627927313>"
+          "description": "The current solar irradiance."
         },
         "RatioLiquidNitrogen": {
           "value": 177,
@@ -1362,6 +1362,46 @@
           "value": 272,
           "deprecated": false,
           "description": "Extended"
+        },
+        "NetworkFault": {
+          "value": 273,
+          "deprecated": false,
+          "description": "Attached network is experiencing a fault, such as a pipe burst or other failure."
+        },
+        "ProportionalGain": {
+          "value": 274,
+          "deprecated": false,
+          "description": "The proportional gain of the PID controller. This value determines how aggressively the controller responds to the error between the setpoint and the process variable. A higher value results in a faster response but may lead to overshoot or instability."
+        },
+        "IntegralGain": {
+          "value": 275,
+          "deprecated": false,
+          "description": "The integral gain of the PID controller. This value determines how much the controller responds to the accumulated error over time. A higher value can help eliminate steady-state errors but may also lead to oscillations or instability."
+        },
+        "DerivativeGain": {
+          "value": 276,
+          "deprecated": false,
+          "description": "The derivative gain of the PID controller. This value determines how much the controller responds to the rate of change of the error. A higher value can help dampen oscillations and improve stability, but may also lead to noise amplification."
+        },
+        "Minimum": {
+          "value": 277,
+          "deprecated": false,
+          "description": "Minimum value for provided logic device."
+        },
+        "Setpoint": {
+          "value": 278,
+          "deprecated": false,
+          "description": "The desired value that the PID controller aims to achieve. This is the target value for the process variable, and the controller will adjust its output to minimize the difference between the setpoint and the process variable."
+        },
+        "Reset": {
+          "value": 279,
+          "deprecated": false,
+          "description": "Resets the PID controller's internal state, clearing any accumulated error and resetting the output to zero. This is useful for starting fresh or recovering from an unstable state."
+        },
+        "StackSize": {
+          "value": 280,
+          "deprecated": false,
+          "description": "Returns the stack size of the devices internal memory."
         }
       }
     },
@@ -1512,6 +1552,16 @@
           "value": 28,
           "deprecated": false,
           "description": "No description available"
+        },
+        "MaturityRatio": {
+          "value": 29,
+          "deprecated": false,
+          "description": "How far the plant is towards maturity represented as a fraction between 0 and 1, with 1 being mature and ready for harvest."
+        },
+        "SeedingRatio": {
+          "value": 30,
+          "deprecated": false,
+          "description": "How far the plant is towards seeding represented as a fraction between 0 and 1, with 1 being seeding and will supply seeds when harvested."
         }
       }
     },
@@ -2028,12 +2078,12 @@
         "SettingInput": {
           "value": 91,
           "deprecated": false,
-          "description": "<A:EN:-1139210406>"
+          "description": "The input setting for the device"
         },
         "SettingOutput": {
           "value": 92,
           "deprecated": false,
-          "description": "<A:EN:1605622326>"
+          "description": "The output setting for the device"
         },
         "CurrentResearchPodType": {
           "value": 93,
@@ -2448,7 +2498,7 @@
         "SolarIrradiance": {
           "value": 176,
           "deprecated": false,
-          "description": "<A:EN:-1627927313>"
+          "description": "The current solar irradiance."
         },
         "RatioLiquidNitrogen": {
           "value": 177,
@@ -2929,6 +2979,46 @@
           "value": 272,
           "deprecated": false,
           "description": "Extended"
+        },
+        "NetworkFault": {
+          "value": 273,
+          "deprecated": false,
+          "description": "Attached network is experiencing a fault, such as a pipe burst or other failure."
+        },
+        "ProportionalGain": {
+          "value": 274,
+          "deprecated": false,
+          "description": "The proportional gain of the PID controller. This value determines how aggressively the controller responds to the error between the setpoint and the process variable. A higher value results in a faster response but may lead to overshoot or instability."
+        },
+        "IntegralGain": {
+          "value": 275,
+          "deprecated": false,
+          "description": "The integral gain of the PID controller. This value determines how much the controller responds to the accumulated error over time. A higher value can help eliminate steady-state errors but may also lead to oscillations or instability."
+        },
+        "DerivativeGain": {
+          "value": 276,
+          "deprecated": false,
+          "description": "The derivative gain of the PID controller. This value determines how much the controller responds to the rate of change of the error. A higher value can help dampen oscillations and improve stability, but may also lead to noise amplification."
+        },
+        "Minimum": {
+          "value": 277,
+          "deprecated": false,
+          "description": "Minimum value for provided logic device."
+        },
+        "Setpoint": {
+          "value": 278,
+          "deprecated": false,
+          "description": "The desired value that the PID controller aims to achieve. This is the target value for the process variable, and the controller will adjust its output to minimize the difference between the setpoint and the process variable."
+        },
+        "Reset": {
+          "value": 279,
+          "deprecated": false,
+          "description": "Resets the PID controller's internal state, clearing any accumulated error and resetting the output to zero. This is useful for starting fresh or recovering from an unstable state."
+        },
+        "StackSize": {
+          "value": 280,
+          "deprecated": false,
+          "description": "Returns the stack size of the devices internal memory."
         }
       }
     },
@@ -3079,6 +3169,16 @@
           "value": 28,
           "deprecated": false,
           "description": "No description available"
+        },
+        "MaturityRatio": {
+          "value": 29,
+          "deprecated": false,
+          "description": "How far the plant is towards maturity represented as a fraction between 0 and 1, with 1 being mature and ready for harvest."
+        },
+        "SeedingRatio": {
+          "value": 30,
+          "deprecated": false,
+          "description": "How far the plant is towards seeding represented as a fraction between 0 and 1, with 1 being seeding and will supply seeds when harvested."
         }
       }
     },
@@ -4327,6 +4427,86 @@
         }
       }
     },
+    "DisplayMode": {
+      "enumName": "DisplayMode",
+      "values": {
+        "Default": {
+          "value": 0,
+          "deprecated": false,
+          "description": ""
+        },
+        "Percent": {
+          "value": 1,
+          "deprecated": false,
+          "description": ""
+        },
+        "Power": {
+          "value": 2,
+          "deprecated": false,
+          "description": ""
+        },
+        "Kelvin": {
+          "value": 3,
+          "deprecated": false,
+          "description": ""
+        },
+        "Celsius": {
+          "value": 4,
+          "deprecated": false,
+          "description": ""
+        },
+        "Meters": {
+          "value": 5,
+          "deprecated": false,
+          "description": ""
+        },
+        "Credits": {
+          "value": 6,
+          "deprecated": false,
+          "description": ""
+        },
+        "Seconds": {
+          "value": 7,
+          "deprecated": false,
+          "description": ""
+        },
+        "Minutes": {
+          "value": 8,
+          "deprecated": false,
+          "description": ""
+        },
+        "Days": {
+          "value": 9,
+          "deprecated": false,
+          "description": ""
+        },
+        "String": {
+          "value": 10,
+          "deprecated": false,
+          "description": ""
+        },
+        "Fahrenheit": {
+          "value": 11,
+          "deprecated": false,
+          "description": ""
+        },
+        "Litres": {
+          "value": 12,
+          "deprecated": false,
+          "description": ""
+        },
+        "Mol": {
+          "value": 13,
+          "deprecated": false,
+          "description": ""
+        },
+        "Pa": {
+          "value": 14,
+          "deprecated": false,
+          "description": ""
+        }
+      }
+    },
     "ContactTier": {
       "enumName": "ContactTier",
       "values": {
@@ -4342,6 +4522,21 @@
         },
         "Far": {
           "value": 2,
+          "deprecated": false,
+          "description": ""
+        }
+      }
+    },
+    "SettingDisplayMode": {
+      "enumName": "SettingDisplayMode",
+      "values": {
+        "Number": {
+          "value": 0,
+          "deprecated": false,
+          "description": ""
+        },
+        "String": {
+          "value": 1,
           "deprecated": false,
           "description": ""
         }
